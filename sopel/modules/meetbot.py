@@ -81,7 +81,7 @@ meeting_actions = {}  # A dict of channels to the actions that have been created
 # Get the logfile name for the meeting in the requested channel
 # Used by all logging functions
 def figure_logfile_name(channel):
-    if meetings_dict[channel]['title'] is 'Untitled meeting':
+    if meetings_dict[channel]['title'] == 'Untitled meeting':
         name = 'untitled'
     else:
         name = meetings_dict[channel]['title']
