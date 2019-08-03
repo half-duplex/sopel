@@ -249,6 +249,7 @@ def track_modes(bot, trigger):
         "a": sopel.module.ADMIN,
         "q": sopel.module.OWNER,
         "y": sopel.module.OPER,
+        "Y": sopel.module.OPER,
     }
 
     # Parse modes before doing anything else
