@@ -135,8 +135,8 @@ def rule(*patterns):
     captured groups here will be retrievable through the Trigger object later.
 
     Inside the regular expression, some special directives can be used. $nick
-    will be replaced with the nick of the bot and , or :, and $nickname will be
-    replaced with the nick of the bot.
+    will be replaced with the nick of the bot followed by a comma or colon
+    (eg. "Sopel:"), and $nickname will be replaced with the nick of the bot.
 
     .. versionchanged:: 7.0
 
