@@ -933,13 +933,27 @@ class Sopel(irc.AbstractBot):
         if isinstance(pattern, basestring):
             pattern = re.compile(pattern)
 
-        self.memory['url_callbacks'][pattern] = callback
+        if pattern not in self.memory["url_callbacks"]:
+            # TODO: Ideally this would be a list version of SopelMemory
+            self.memory["url_callbacks"][pattern] = []
 
-    def unregister_url_callback(self, pattern):
+        # If someone added a callback the old way
+        if not isinstance(self.memory["url_callbacks"][pattern], list):
+            LOGGER.warning(
+                'bot.memory["url_callbacks"] has been used directly for %s, update to register_url_callback()',
+                pattern.pattern,
+            )
+            self.memory["url_callbacks"][pattern] = [self.memory["url_callbacks"][pattern]]
+
+        self.memory["url_callbacks"][pattern].append(callback)
+
+    def unregister_url_callback(self, pattern, callback):
         """Unregister the callback for URLs matching the regex ``pattern``.
 
         :param pattern: compiled regex pattern to unregister callback
         :type pattern: :ref:`re.Pattern <python:re-objects>`
+        :param callback: callable object to remove
+        :type callback: :term:`function`
 
         .. versionadded:: 7.0
 
@@ -955,9 +969,9 @@ class Sopel(irc.AbstractBot):
             use this much more concise pattern::
 
                 regex = re.compile(r'http://example.com/path/.*')
-                bot.unregister_url_callback(regex)
+                bot.unregister_url_callback(regex, my_callback)
 
-        It's also possible to completely avoid manual management of URL
+        It's recommended to completely avoid manual management of URL
         callbacks through the use of :func:`sopel.module.url`.
         """
         if 'url_callbacks' not in self.memory:
@@ -967,10 +981,18 @@ class Sopel(irc.AbstractBot):
         if isinstance(pattern, basestring):
             pattern = re.compile(pattern)
 
-        try:
-            del self.memory['url_callbacks'][pattern]
-        except KeyError:
-            pass
+        if pattern not in self.memory["url_callbacks"]:
+            # nothing to unregister
+            return
+
+        if isinstance(self.memory["url_callbacks"][pattern], list):
+            try:
+                self.memory["url_callbacks"][pattern].remove(callback)
+            except ValueError:  # callback not present
+                pass
+        else:
+            if self.memory["url_callbacks"][pattern] == callback:
+                del self.memory["url_callbacks"][pattern]
 
     def search_url_callbacks(self, url):
         """Yield callbacks whose regex pattern matches the ``url``.
@@ -1000,10 +1022,14 @@ class Sopel(irc.AbstractBot):
             # nothing to search
             return
 
-        for regex, function in tools.iteritems(self.memory['url_callbacks']):
+        for regex, functions in tools.iteritems(self.memory["url_callbacks"]):
             match = regex.search(url)
             if match:
-                yield function, match
+                if isinstance(functions, list):
+                    for function in functions:
+                        yield function, match
+                else:
+                    yield functions, match
 
     def restart(self, message):
         """Disconnect from IRC and restart the bot.
