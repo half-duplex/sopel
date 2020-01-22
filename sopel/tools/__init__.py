@@ -664,16 +664,37 @@ class SopelMemory(dict):
         Moved to ``tools.WillieMemory``
     .. versionchanged:: 6.0
         Renamed from ``WillieMemory`` to ``SopelMemory``
+    .. versionchanged:: 7.1
+        Added deprecation tools
     """
     def __init__(self, *args):
         dict.__init__(self, *args)
         self.lock = threading.Lock()
+
+        self.deprecated_keys = {}
+        """Map of deprecated keys to deprecation reason"""
+
+    def __getitem__(self, key):
+        """Get the value for a key."""
+        if key in self.deprecated_keys:
+            logging.warning(
+                'Key "%s" is deprecated: %s',
+                key,
+                self.deprecated_keys[key],
+            )
+        return dict.__getitem__(self, key)
 
     def __setitem__(self, key, value):
         """Set a key equal to a value.
 
         The dict is locked for other writes while doing so.
         """
+        if key in self.deprecated_keys:
+            logging.warning(
+                'Key "%s" is deprecated: %s',
+                key,
+                self.deprecated_keys[key],
+            )
         self.lock.acquire()
         result = dict.__setitem__(self, key, value)
         self.lock.release()
