@@ -87,17 +87,8 @@ class Sopel(irc.AbstractBot):
         For servers that do not support IRCv3, this will be an empty set.
         """
 
-        self.privileges = dict()
-        """A dictionary of channels to their users and privilege levels.
-
-        The value associated with each channel is a dictionary of
-        :class:`sopel.tools.Identifier`\\s to a bitwise integer value,
-        determined by combining the appropriate constants from
-        :mod:`sopel.module`.
-
-        .. deprecated:: 6.2.0
-            Use :attr:`channels` instead. Will be removed in Sopel 8.
-        """
+        self._privileges = dict()
+        """A dictionary of channels to their users and privilege levels."""
 
         self.channels = tools.SopelMemory()  # name to chan obj
         """A map of the channels that Sopel is in.
@@ -129,6 +120,24 @@ class Sopel(irc.AbstractBot):
 
         self.scheduler = sopel.tools.jobs.JobScheduler(self)
         """Job Scheduler. See :func:`sopel.module.interval`."""
+
+    @property
+    def privileges(self):
+        """A dictionary of channels to their users and privilege levels.
+
+        The value associated with each channel is a dictionary of
+        :class:`sopel.tools.Identifier`\\s to a bitwise integer value,
+        determined by combining the appropriate constants from
+        :mod:`sopel.module`.
+
+        .. deprecated:: 6.2.0
+            Use :attr:`channels` instead. Will be removed in Sopel 8.
+        """
+        LOGGER.warning(
+            "Sopel.privileges is deprecated and will be removed in Sopel 8. "
+            "Use Sopel.channels instead"
+        )
+        return self._privileges
 
     @property
     def command_groups(self):
