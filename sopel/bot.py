@@ -122,6 +122,10 @@ class Sopel(irc.AbstractBot):
         """Job Scheduler. See :func:`sopel.module.interval`."""
 
     @property
+    @deprecated(
+        reason="BLAH",
+        version="6.2.0",
+        removed_in="8.0")
     def privileges(self):
         """A dictionary of channels to their users and privilege levels.
 

@@ -457,3 +457,19 @@ def test_multiple_url_callback(tmpconfig):
     results = list(sopel.search_url_callbacks('https://example.com'))
     assert len(results) == 1, 'Exactly one handler must remain'
     assert url_handler_global in results[0], 'Wrong remaining handler'
+
+
+def test_privileges_deprecation_warning(mockbot, ircfactory, caplog):
+    """Ensure warnings are raised about deprecated bot.privileges uses"""
+    irc = ircfactory(mockbot)
+    irc.channel_joined('#test', ['Uop'])
+    irc.mode_set('#test', '+o', ['Uop'])
+
+    print(mockbot.privileges.keys())
+    assert mockbot.privileges["#test"]["Uop"] > 0
+
+    for record in caplog.records:
+        if "privileges" in record.text and "deprecated" in record.text:
+            # success
+            return
+    raise Exception("No deprecation warning was found")
