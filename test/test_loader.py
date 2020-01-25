@@ -103,7 +103,7 @@ def test_clean_module(testplugin, tmpconfig):
     testplugin.load()
     test_mod = testplugin._module
 
-    callables, jobs, shutdowns, urls = loader.clean_module(
+    callables, jobs, shutdowns, urls, routes = loader.clean_module(
         test_mod, tmpconfig)
 
     assert len(callables) == 3
@@ -140,7 +140,7 @@ def test_clean_module_idempotency(testplugin, tmpconfig):
     testplugin.load()
     test_mod = testplugin._module
 
-    callables, jobs, shutdowns, urls = loader.clean_module(
+    callables, jobs, shutdowns, urls, routes = loader.clean_module(
         test_mod, tmpconfig)
 
     # sanity assertions: check test_clean_module if any of these fails
@@ -150,7 +150,7 @@ def test_clean_module_idempotency(testplugin, tmpconfig):
     assert len(urls) == 1
 
     # recall clean_module, we should have the same result
-    new_callables, new_jobs, new_shutdowns, new_urls = loader.clean_module(
+    new_callables, new_jobs, new_shutdowns, new_urls, new_routes = loader.clean_module(
         test_mod, tmpconfig)
 
     assert new_callables == callables

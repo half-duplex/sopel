@@ -211,7 +211,7 @@ def test_remove_plugin_unknown_plugin(tmpconfig):
 
     plugin = plugins.handlers.PyModulePlugin('admin', 'sopel.modules')
     with pytest.raises(plugins.exceptions.PluginNotRegistered):
-        sopel.remove_plugin(plugin, [], [], [], [])
+        sopel.remove_plugin(plugin, [], [], [], [], [])
 
 
 def test_remove_plugin_unregistered_plugin(tmpconfig):
@@ -227,7 +227,7 @@ def test_remove_plugin_unregistered_plugin(tmpconfig):
 
     # And now it must raise an exception
     with pytest.raises(plugins.exceptions.PluginNotRegistered):
-        sopel.remove_plugin(plugin, [], [], [], [])
+        sopel.remove_plugin(plugin, [], [], [], [], [])
 
 
 def test_reload_plugin_unregistered_plugin(tmpconfig):

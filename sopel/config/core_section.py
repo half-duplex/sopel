@@ -157,6 +157,18 @@ class CoreSection(StaticSection):
     :default: ``0.0.0.0`` (all interfaces)
     """
 
+    bottle_host = ValidatedAttribute('bottle_host', default="127.0.0.1")
+    """IP for the Bottle HTTP server to listen on
+
+    :default: ``127.0.0.1``
+    """
+
+    bottle_port = ValidatedAttribute('bottle_port', int, default=8080)
+    """Port for the Bottle HTTP server to listen on
+
+    :default: ``8080``
+    """
+
     ca_certs = FilenameAttribute('ca_certs', default=_find_certs())
     """The path to the CA certs ``.pem`` file.
 

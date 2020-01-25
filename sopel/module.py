@@ -10,6 +10,7 @@
 
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import bottle
 import functools
 import re
 
@@ -34,6 +35,7 @@ __all__ = [
     'require_owner',
     'require_privilege',
     'require_privmsg',
+    'route',
     'rule',
     'thread',
     'unblockable',
@@ -661,6 +663,25 @@ def require_owner(message=None, reply=False):  # lgtm [py/similar-function]
     # Hack to allow decorator without parens
     if callable(message):
         return actual_decorator(message)
+    return actual_decorator
+
+
+def route(path=None, method="GET", **config):
+    """Decorate a function to handle HTTP requests
+
+    See https://bottlepy.org/docs/dev/api.html#bottle.Bottle.route for parameters
+    """
+
+    if not isinstance(method, list):
+        method = [method]
+
+    def actual_decorator(function):
+        if not hasattr(function, 'routes'):
+            function.routes = []
+        for verb in method:
+            new_route = bottle.Route(None, path, verb, function, **config)
+            function.routes.append(new_route)
+        return function
     return actual_decorator
 
 

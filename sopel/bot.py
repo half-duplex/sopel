@@ -9,6 +9,7 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 from ast import literal_eval
+import bottle
 import collections
 from datetime import datetime
 import itertools
@@ -46,6 +47,12 @@ class Sopel(irc.AbstractBot):
         self.wantsrestart = False
         self._running_triggers = []
         self._running_triggers_lock = threading.Lock()
+
+        self._bottle_app = None
+        self._bottle_server = None
+        """The Bottle ServerAdapter (subclass) used for the HTTP server"""
+        self._bottle_thread = None
+        """The thread running the Bottle HTTP server"""
 
         # `re.compile('.*') is re.compile('.*')` because of caching, so we need
         # to associate a list with each regex, since they are unexpectedly
@@ -278,7 +285,7 @@ class Sopel(irc.AbstractBot):
             LOGGER.info('Reloaded %s plugin %s from %s',
                         meta['type'], name, meta['source'])
 
-    def add_plugin(self, plugin, callables, jobs, shutdowns, urls):
+    def add_plugin(self, plugin, callables, jobs, shutdowns, urls, routes):
         """Add a loaded plugin to the bot's registry.
 
         :param plugin: loaded plugin to add
@@ -294,11 +301,14 @@ class Sopel(irc.AbstractBot):
         :param urls: an iterable of functions from the ``plugin`` to call when
                      matched against a URL
         :type urls: :term:`iterable`
+        :param routes: an iterable of `Bottle.Route` objects containing
+                     callbacks to handle HTTP requests
+        :type routes: :term:`iterable`
         """
         self._plugins[plugin.name] = plugin
-        self.register(callables, jobs, shutdowns, urls)
+        self.register(callables, jobs, shutdowns, urls, routes)
 
-    def remove_plugin(self, plugin, callables, jobs, shutdowns, urls):
+    def remove_plugin(self, plugin, callables, jobs, shutdowns, urls, routes):
         """Remove a loaded plugin from the bot's registry.
 
         :param plugin: loaded plugin to remove
@@ -314,6 +324,9 @@ class Sopel(irc.AbstractBot):
         :param urls: an iterable of functions from the ``plugin`` to call when
                      matched against a URL
         :type urls: :term:`iterable`
+        :param routes: an iterable of `Bottle.Route` objects containing
+                     callbacks to handle HTTP requests
+        :type routes: :term:`iterable`
         """
         name = plugin.name
         if not self.has_plugin(name):
@@ -334,6 +347,16 @@ class Sopel(irc.AbstractBot):
 
         # remove plugin from registry
         del self._plugins[name]
+
+        # destroy and rebuild bottle without this plugin
+        # since there is no way to remove a single route cleanly
+        if self._bottle_server is not None:  # if stopped, don't start
+            self._bottle_server.stop()
+            self._bottle_thread.join()  # main thread waiting...
+            self._start_bottle()
+            for plugin_name, plugin in tools.iteritems(self._plugins):
+                for route in plugin.routes:
+                    self._bottle_app.add_route(route)
 
     def has_plugin(self, name):
         """Check if the bot has registered a plugin of the specified name.
@@ -386,8 +409,8 @@ class Sopel(irc.AbstractBot):
         if callable_name == "shutdown" and obj in self.shutdown_methods:
             self.shutdown_methods.remove(obj)
 
-    def register(self, callables, jobs, shutdowns, urls):
-        """Register rules, jobs, shutdown methods, and URL callbacks.
+    def register(self, callables, jobs, shutdowns, urls, routes):
+        """Register rules, jobs, shutdown methods, URL callbacks, and routes
 
         :param callables: an iterable of callables to register
         :type callables: :term:`iterable`
@@ -397,6 +420,8 @@ class Sopel(irc.AbstractBot):
         :type shutdowns: :term:`iterable`
         :param urls: an iterable of functions to call when matched against a URL
         :type urls: :term:`iterable`
+        :param routes: an iterable of `Bottle.Route`s to handle HTTP reqests
+        :type routes: :term:`iterable`
 
         The ``callables`` argument contains a list of "callable objects", i.e.
         objects for which :func:`callable` will return ``True``. They can be:
@@ -495,6 +520,38 @@ class Sopel(irc.AbstractBot):
                     'URL Callback added "%s" for URL pattern "%s"',
                     callable_name,
                     regex)
+
+        if routes:
+            self._start_bottle()
+        for route in routes:
+            self._bottle_app.add_route(route)
+            LOGGER.debug(
+                'Route added "%s"',
+                route)
+
+    def _start_bottle(self):
+        host = self.config.core.bottle_host
+        port = self.config.core.bottle_port
+        self._bottle_app = bottle.default_app()
+        self._bottle_server = StoppableWSGIRefServer(host=host, port=port)
+        self._bottle_thread = threading.Thread(
+            target=bottle.run,
+            kwargs={
+                "app": self._bottle_app,
+                "server": self._bottle_server,
+            }
+        )
+        self._bottle_thread.setDaemon(True)
+        self._bottle_thread.start()
+
+    def register_route(self, plugin, route):
+        # how?? we need to track the route in the plugin in case another plugin
+        # with routes is un/re-loaded
+        # but I think we kinda need dynamic control?
+        pass
+
+    def unregister_route(self, plugin, route):
+        pass
 
     @deprecated(
         reason="Replaced by `say` method.",
@@ -1157,3 +1214,20 @@ class SopelWrapper(object):
         if nick is None:
             raise RuntimeError('Error: KICK requires a nick.')
         self._bot.kick(nick, channel, message)
+
+
+class StoppableWSGIRefServer(bottle.ServerAdapter):
+    server = None
+
+    def run(self, handler):
+        from wsgiref.simple_server import make_server, WSGIRequestHandler
+        if self.quiet:
+            class QuietHandler(WSGIRequestHandler):
+                def log_request(*args, **kw):
+                    pass
+            self.options['handler_class'] = QuietHandler
+        self.server = make_server(self.host, self.port, handler, **self.options)
+        self.server.serve_forever()
+
+    def stop(self):
+        self.server.shutdown()

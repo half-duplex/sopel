@@ -156,6 +156,7 @@ def clean_module(module, config):
     shutdowns = []
     jobs = []
     urls = []
+    routes = []
     for obj in itervalues(vars(module)):
         if callable(obj):
             if getattr(obj, '__name__', None) == 'shutdown':
@@ -168,4 +169,6 @@ def clean_module(module, config):
                 jobs.append(obj)
             elif hasattr(obj, 'url_regex'):
                 urls.append(obj)
-    return callables, jobs, shutdowns, urls
+            elif hasattr(obj, 'routes'):
+                routes = obj.routes
+    return callables, jobs, shutdowns, urls, routes
