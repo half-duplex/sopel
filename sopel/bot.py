@@ -524,6 +524,7 @@ class Sopel(irc.AbstractBot):
         if routes:
             self._start_bottle()
         for route in routes:
+            route.app = self._bottle_app
             self._bottle_app.add_route(route)
             LOGGER.debug(
                 'Route added "%s"',
