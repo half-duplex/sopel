@@ -682,15 +682,13 @@ class SopelMemory(dict):
         The dict is locked for other writes while doing so.
         """
         if key in self._deprecated_keys:
-            try:
-                raise Exception()
-            except Exception:
-                logging.warning(
-                    'Key "%s" is deprecated: %s',
-                    key,
-                    self._deprecated_keys[key],
-                    exc_info=True,
-                )
+            trace = traceback.extract_stack()
+            logging.warning(
+                'Key "%s" is deprecated: %s\n%s',
+                key,
+                self._deprecated_keys[key],
+                traceback.format_list(trace[:-1])[-1][:-1],
+            )
         self.lock.acquire()
         result = dict.__setitem__(self, key, value)
         self.lock.release()
