@@ -1099,7 +1099,7 @@ class example(object):
 
         self.user_help = user_help
 
-    def __call__(self, func):
+    def __call__(self, func):  # noqa: D102
         if not hasattr(func, "example"):
             func.example = []
 

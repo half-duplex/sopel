@@ -139,6 +139,7 @@ def _execute_perform(bot):
 @plugin.priority('high')
 @plugin.unblockable
 def on_nickname_in_use(bot, trigger):
+    """Change nickname and retry if configured name is in use."""
     LOGGER.error(
         'Nickname already in use! '
         '(Nick: %s; Sender: %s; Args: %r)',
@@ -693,7 +694,7 @@ def receive_cap_list(bot, trigger):
 
 
 def receive_cap_ls_reply(bot, trigger):
-    """Special handling for CAP LS reply from the IRC server."""
+    """Handle CAP LS reply from IRC server."""
     if bot.server_capabilities:
         # We've already seen the results, so someone sent CAP LS from a plugin.
         # We're too late to do SASL, and we don't want to send CAP END before
@@ -860,6 +861,7 @@ def sasl_success(bot, trigger):
 @module.event(events.RPL_SASLMECHS)
 @module.unblockable
 def sasl_mechs(bot, trigger):
+    """Validate SASLMECHS reply."""
     # Presumably we're only here if we said we actually *want* sasl, but still
     # check anyway in case the server glitched.
     password, mech = _get_sasl_pass_and_mech(bot)

@@ -389,7 +389,7 @@ class Trigger(unicode):
     the message isn't logged in to services, this property will be ``None``.
     """
 
-    def __new__(cls, config, message, match, account=None):
+    def __new__(cls, config, message, match, account=None):  # noqa: D102
         self = unicode.__new__(cls, message.args[-1] if message.args else '')
         self._account = account
         self._pretrigger = message

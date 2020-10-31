@@ -424,7 +424,7 @@ class Identifier(unicode):
     # Python 2 support, since in py3 plain str is Unicode and a "unicode" type
     # no longer exists. Probably lots of code will need tweaking, tbh.
 
-    def __new__(cls, identifier):
+    def __new__(cls, identifier):  # noqa: D102
         # According to RFC2812, identifiers have to be in the ASCII range.
         # However, I think it's best to let the IRCd determine that, and we'll
         # just assume unicode. It won't hurt anything, and is more internally
@@ -582,6 +582,7 @@ class OutputRedirect(object):
 # We'll drop it in Sopel 8.0 because it has been here for far too long already.
 @deprecated('Use `print()` instead of sopel.tools.stdout', removed_in='8.0')
 def stdout(string):
+    """Deprecated console output wrapper."""
     print(string)
 
 

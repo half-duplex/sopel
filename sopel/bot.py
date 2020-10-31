@@ -508,6 +508,11 @@ class Sopel(irc.AbstractBot):
         self.register_urls(urls)
 
     def register_callables(self, callables):
+        """Register callables for the module.
+
+        :param callables: an iterable of callables to register
+        :type callables: :term:`iterable`
+        """
         match_any = re.compile(r'.*')
         settings = self.settings
 
@@ -553,20 +558,40 @@ class Sopel(irc.AbstractBot):
                     plugin_rules.Rule.from_callable(self.settings, callbl))
 
     def register_jobs(self, jobs):
+        """Register jobs for a module.
+
+        :param jobs: an iterable of functions to periodically invoke
+        :type jobs: :term:`iterable`
+        """
         for func in jobs:
             job = sopel.tools.jobs.Job.from_callable(self.settings, func)
             self._scheduler.register(job)
 
     def unregister_jobs(self, jobs):
+        """Unregister jobs for a module.
+
+        :param jobs: an iterable of functions to periodically invoke
+        :type jobs: :term:`iterable`
+        """
         for job in jobs:
             self._scheduler.remove_callable_job(job)
 
     def register_shutdowns(self, shutdowns):
+        """Register shutdown callbacks for a module.
+
+        :param shutdowns: an iterable of functions to call on shutdown
+        :type shutdowns: :term:`iterable`
+        """
         # Append plugin's shutdown function to the bot's list of functions to
         # call on shutdown
         self.shutdown_methods = self.shutdown_methods + list(shutdowns)
 
     def unregister_shutdowns(self, shutdowns):
+        """Unregister shutdown callbacks for a module.
+
+        :param shutdowns: an iterable of functions to call on shutdown
+        :type shutdowns: :term:`iterable`
+        """
         self.shutdown_methods = [
             shutdown
             for shutdown in self.shutdown_methods
@@ -574,6 +599,11 @@ class Sopel(irc.AbstractBot):
         ]
 
     def register_urls(self, urls):
+        """Register URL callbacks for a module.
+
+        :param urls: an iterable of functions to call when matched against a URL
+        :type urls: :term:`iterable`
+        """
         for func in urls:
             url_regex = getattr(func, 'url_regex', [])
             url_lazy_loaders = getattr(func, 'url_lazy_loaders', None)
@@ -609,6 +639,15 @@ class Sopel(irc.AbstractBot):
         self.say(text, recipient, max_messages)
 
     def call_rule(self, rule, sopel, trigger):
+        """Call a rule, applying any rate limits or other restrictions.
+
+        :param rule: the function to call
+        :type rule: :class:`generic rule <Rule>`
+        :param sopel: a SopelWrapper instance
+        :type sopel: :class:`SopelWrapper`
+        :param Trigger trigger: the Trigger object for the line from the server
+                                that triggered this call
+        """
         # rate limiting
         if not trigger.admin and not rule.is_unblockable():
             if rule.is_rate_limited(trigger.nick):
