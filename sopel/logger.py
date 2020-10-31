@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Sopel Logger."""
+"""Sopel's logging tools."""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import logging

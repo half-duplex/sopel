@@ -54,6 +54,7 @@ if sys.version_info.major == 2:
 
 
 def read_reqs(path):
+    """Read requirement specifiers from the given file."""
     with open(path, 'r') as fil:
         return list(fil.readlines())
 

@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Sopel Loader."""
+"""Everything needed to load Sopel plugins."""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
@@ -229,6 +229,7 @@ def is_url_callback(obj):
 
 
 def clean_module(module, config):
+    """Go through a (plugin) module and process its members."""
     callables = []
     shutdowns = []
     jobs = []

@@ -11,6 +11,7 @@ functions are available in a new package, ``sopel.tools.web``.
 # Copyright © 2012, Dimitri Molenaars, Tyrope.nl.
 # Copyright © 2012-2013, Elad Alfassa, <elad@fedoraproject.org>
 # Copyright © 2019, dgw, technobabbl.es
+#
 # Licensed under the Eiffel Forum License 2.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -164,6 +165,7 @@ class MockHttpResponse(httplib.HTTPResponse):
         self.url = response.url
 
     def geturl(self):
+        """Mock property for tests."""
         return self.url
 
 

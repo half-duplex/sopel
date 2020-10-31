@@ -41,6 +41,7 @@ who_reqs = {}  # Keeps track of reqs coming from this module, rather than others
 
 
 def setup(bot):
+    """Set up the core tasks needed for Sopel to function."""
     bot.memory['join_events_queue'] = collections.deque()
 
     # Manage JOIN flood protection
@@ -59,6 +60,7 @@ def setup(bot):
 
 
 def shutdown(bot):
+    """Clean up when the bot exits, reconnects, or restarts."""
     try:
         bot.memory['join_events_queue'].clear()
     except KeyError:
@@ -84,7 +86,7 @@ def _join_event_processing(bot):
 
 
 def auth_after_register(bot):
-    """Do NickServ/AuthServ auth."""
+    """Do NickServ/AuthServ authentication."""
     if bot.config.core.auth_method:
         auth_method = bot.config.core.auth_method
         auth_username = bot.config.core.auth_username
@@ -260,6 +262,7 @@ def parse_reply_myinfo(bot, trigger):
 @module.require_owner()
 @module.commands('useserviceauth')
 def enable_service_auth(bot, trigger):
+    """Switch to using network services to authenticate Sopel's owner."""
     if bot.config.core.owner_account:
         return
     if 'account-tag' not in bot.enabled_capabilities:
@@ -484,6 +487,7 @@ def track_nicks(bot, trigger):
 @module.thread(False)
 @module.unblockable
 def track_part(bot, trigger):
+    """Keep track of users when they PART channels Sopel has joined."""
     nick = trigger.nick
     channel = trigger.sender
     _remove_from_channel(bot, nick, channel)
@@ -494,6 +498,7 @@ def track_part(bot, trigger):
 @module.thread(False)
 @module.unblockable
 def track_kick(bot, trigger):
+    """Keep track of users who get KICKed from channels Sopel has joined."""
     nick = Identifier(trigger.args[1])
     channel = trigger.sender
     _remove_from_channel(bot, nick, channel)
@@ -580,6 +585,7 @@ def _periodic_send_who(bot):
 @module.thread(False)
 @module.unblockable
 def track_join(bot, trigger):
+    """Keep track of users who JOIN channels Sopel has joined."""
     channel = trigger.sender
 
     # is it a new channel?
@@ -617,6 +623,7 @@ def track_join(bot, trigger):
 @module.thread(False)
 @module.unblockable
 def track_quit(bot, trigger):
+    """Keep track of users Sopel knows about who QUIT."""
     for chanprivs in bot.privileges.values():
         chanprivs.pop(trigger.nick, None)
     for channel in bot.channels.values():
@@ -634,6 +641,7 @@ def track_quit(bot, trigger):
 @module.priority('high')
 @module.unblockable
 def receive_cap_list(bot, trigger):
+    """Handle CAP list from the IRC server."""
     cap = trigger.strip('-=~')
     # Server is listing capabilities
     if trigger.args[1] == 'LS':
@@ -685,6 +693,7 @@ def receive_cap_list(bot, trigger):
 
 
 def receive_cap_ls_reply(bot, trigger):
+    """Special handling for CAP LS reply from the IRC server."""
     if bot.server_capabilities:
         # We've already seen the results, so someone sent CAP LS from a plugin.
         # We're too late to do SASL, and we don't want to send CAP END before
@@ -762,6 +771,7 @@ def receive_cap_ls_reply(bot, trigger):
 
 
 def receive_cap_ack_sasl(bot):
+    """Handle CAP ACK for the 'sasl' capability."""
     # Presumably we're only here if we said we actually *want* sasl, but still
     # check anyway in case the server glitched.
     password, mech = _get_sasl_pass_and_mech(bot)
@@ -822,6 +832,7 @@ def send_authenticate(bot, token):
 @module.event('AUTHENTICATE')
 @module.unblockable
 def auth_proceed(bot, trigger):
+    """Proceed with authentication when sent an AUTHENTICATE event."""
     if trigger.args[0] != '+':
         # How did we get here? I am not good with computer.
         return
@@ -842,6 +853,7 @@ def auth_proceed(bot, trigger):
 @module.event(events.RPL_SASLSUCCESS)
 @module.unblockable
 def sasl_success(bot, trigger):
+    """Finish CAP negotiation after SASL authentication succeeds."""
     bot.write(('CAP', 'END'))
 
 
@@ -978,6 +990,7 @@ def blocks(bot, trigger):
 
 @module.event('ACCOUNT')
 def account_notify(bot, trigger):
+    """Handle ACCOUNT notifications from the IRC server."""
     if trigger.nick not in bot.users:
         bot.users[trigger.nick] = target.User(
             trigger.nick, trigger.user, trigger.host)
@@ -991,6 +1004,7 @@ def account_notify(bot, trigger):
 @module.priority('high')
 @module.unblockable
 def recv_whox(bot, trigger):
+    """Handle WHOX replies from the IRC server."""
     if len(trigger.args) < 2 or trigger.args[1] not in who_reqs:
         # Ignored, some plugin probably called WHO
         return
@@ -1045,6 +1059,7 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
 @module.priority('high')
 @module.unblockable
 def recv_who(bot, trigger):
+    """Handle WHO replies from the IRC server."""
     channel, user, host, _, nick, status = trigger.args[1:7]
     away = 'G' in status
     modes = ''.join([c for c in status if c in '~&@%+!'])
@@ -1055,6 +1070,7 @@ def recv_who(bot, trigger):
 @module.priority('high')
 @module.unblockable
 def end_who(bot, trigger):
+    """Handle the end of a WHO reply batch."""
     if _whox_enabled(bot):
         who_reqs.pop(trigger.args[1], None)
 
@@ -1064,6 +1080,7 @@ def end_who(bot, trigger):
 @module.thread(False)
 @module.unblockable
 def track_notify(bot, trigger):
+    """Handle AWAY notifications from the IRC server."""
     if trigger.nick not in bot.users:
         bot.users[trigger.nick] = target.User(
             trigger.nick, trigger.user, trigger.host)
@@ -1077,6 +1094,7 @@ def track_notify(bot, trigger):
 @module.thread(False)
 @module.unblockable
 def track_topic(bot, trigger):
+    """Keep track of channel topics when they change."""
     if trigger.event != 'TOPIC':
         channel = trigger.args[1]
     else:
