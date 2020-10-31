@@ -80,6 +80,8 @@ def shutdown(bot):
 
 
 class WikipediaTLDListParser(HTMLParser):
+    """Parses Wiki HTML tables for TLD data."""
+
     def __init__(self):
         HTMLParser.__init__(self)
         self.in_cell = False

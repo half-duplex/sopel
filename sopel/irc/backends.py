@@ -1,7 +1,9 @@
 # coding=utf-8
+"""Concrete Backends."""
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
+#
 # When working on core IRC protocol related features, consult protocol
 # documentation at http://www.irchelp.org/irchelp/rfc/
 from __future__ import absolute_import, division, print_function, unicode_literals

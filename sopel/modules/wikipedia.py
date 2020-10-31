@@ -26,6 +26,8 @@ PLUGIN_OUTPUT_PREFIX = '[wikipedia] '
 
 
 class WikiParser(HTMLParser):
+    """Parse Wiki HTML for text content."""
+
     def __init__(self, section_name):
         HTMLParser.__init__(self)
         self.consume = True
@@ -86,6 +88,8 @@ class WikiParser(HTMLParser):
 
 
 class WikipediaSection(types.StaticSection):
+    """Plugin configuration definition."""
+
     default_lang = types.ValidatedAttribute('default_lang', default='en')
     """The default language to find articles from (same as Wikipedia language subdomain)."""
     lang_per_channel = types.ValidatedAttribute('lang_per_channel')
@@ -100,7 +104,8 @@ def setup(bot):
 
 
 def configure(config):
-    r"""
+    r"""Interactively configure plugin.
+
     | name | example | purpose |
     | ---- | ------- | ------- |
     | default\_lang | en | The default language to find articles from (same as Wikipedia language subdomain) |

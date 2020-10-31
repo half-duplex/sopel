@@ -38,12 +38,15 @@ LOGGER = logging.getLogger(__name__)
 
 
 class GeoipSection(types.StaticSection):
+    """Plugin configuration definition."""
+
     GeoIP_db_path = types.FilenameAttribute('GeoIP_db_path', directory=True)
     """Path of the directory containing the GeoIP database files."""
 
 
 def configure(config):
-    r"""
+    r"""Interactively configure plugin.
+
     | name | example | purpose |
     | ---- | ------- | ------- |
     | GeoIP\_db\_path | /home/sopel/GeoIP/ | Path to the GeoIP database files |

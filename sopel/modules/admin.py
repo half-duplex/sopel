@@ -17,6 +17,8 @@ from sopel.config import types
 
 
 class AdminSection(types.StaticSection):
+    """Plugin configuration definition."""
+
     hold_ground = types.ValidatedAttribute('hold_ground', bool, default=False)
     """Auto re-join on kick"""
     auto_accept_invite = types.ValidatedAttribute('auto_accept_invite', bool,
@@ -25,7 +27,8 @@ class AdminSection(types.StaticSection):
 
 
 def configure(config):
-    r"""
+    r"""Interactively configure plugin.
+
     | name | example | purpose |
     | ---- | ------- | ------- |
     | hold\_ground | False | Auto-rejoin the channel after being kicked. |
@@ -43,12 +46,16 @@ def setup(bot):
 
 
 class InvalidSection(Exception):
+    """Exception for missing configuration sections."""
+
     def __init__(self, section):
         super(InvalidSection, self).__init__(self, 'Section [{}] does not exist.'.format(section))
         self.section = section
 
 
 class InvalidSectionOption(Exception):
+    """Exception for invalid options in a configuration section."""
+
     def __init__(self, section, option):
         super(InvalidSectionOption, self).__init__(self, 'Section [{}] does not have option \'{}\'.'.format(section, option))
         self.section = section
@@ -56,7 +63,7 @@ class InvalidSectionOption(Exception):
 
 
 def _get_config_channels(channels):
-    """List"""
+    """Parse channel list from config."""
     for channel_info in channels:
         if ' ' in channel_info:
             yield channel_info.split(' ', 1)

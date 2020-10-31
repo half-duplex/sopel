@@ -47,6 +47,8 @@ cache_limit = 512
 
 
 class SafetySection(types.StaticSection):
+    """Plugin configuration definition."""
+
     enabled_by_default = types.ValidatedAttribute('enabled_by_default',
                                                   bool,
                                                   default=True)
@@ -58,7 +60,8 @@ class SafetySection(types.StaticSection):
 
 
 def configure(config):
-    r"""
+    r"""Interactively configure plugin.
+
     | name | example | purpose |
     | ---- | ------- | ------- |
     | enabled\_by\_default | True | Enable URL safety in all channels where it isn't explicitly disabled. |

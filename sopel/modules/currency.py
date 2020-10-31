@@ -38,6 +38,8 @@ rates_updated = 0.0
 
 
 class CurrencySection(types.StaticSection):
+    """Plugin configuration definition."""
+
     fixer_io_key = types.ValidatedAttribute('fixer_io_key', default=None)
     """Optional API key for Fixer.io (increases currency support)"""
     auto_convert = types.ValidatedAttribute('auto_convert',
@@ -47,7 +49,8 @@ class CurrencySection(types.StaticSection):
 
 
 def configure(config):
-    r"""
+    r"""Interactively configure the plugin.
+
     | name | example | purpose |
     | ---- | ------- | ------- |
     | auto\_convert | False | Whether to convert currencies without an explicit command |

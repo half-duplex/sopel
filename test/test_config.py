@@ -1,4 +1,5 @@
 # coding=utf-8
+"""Tests for ``sopel.config``."""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
@@ -66,6 +67,8 @@ if sys.version_info.major < 3:
 
 
 class FakeConfigSection(types.StaticSection):
+    """Mock config definition."""
+
     valattr = types.ValidatedAttribute('valattr')
     listattr = types.ListAttribute('listattr')
     choiceattr = types.ChoiceAttribute('choiceattr', ['spam', 'egg', 'bacon'])
@@ -76,6 +79,8 @@ class FakeConfigSection(types.StaticSection):
 
 
 class SpamSection(types.StaticSection):
+    """Another mock config section."""
+
     eggs = types.ListAttribute('eggs')
     bacons = types.ListAttribute('bacons', strip=False)
     cheeses = types.ListAttribute('cheeses')

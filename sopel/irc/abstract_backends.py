@@ -1,4 +1,5 @@
 # coding=utf-8
+"""Abstract Backends."""
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.

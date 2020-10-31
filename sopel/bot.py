@@ -1,4 +1,5 @@
 # coding=utf-8
+"""The Bot."""
 # Copyright 2008, Sean B. Palmer, inamidst.com
 # Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 # Copyright 2012-2015, Elsie Powell, http://embolalia.com
@@ -53,6 +54,8 @@ else:
 
 
 class Sopel(irc.AbstractBot):
+    """Concrete Sopel bot."""
+
     def __init__(self, config, daemon=False):
         super(Sopel, self).__init__(config)
         self._daemon = daemon  # Used for iPython. TODO something saner here

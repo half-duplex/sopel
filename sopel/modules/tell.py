@@ -25,6 +25,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 class TellSection(types.StaticSection):
+    """Plugin configuration definition."""
+
     use_private_reminder = types.ValidatedAttribute(
         'use_private_reminder', parse=bool, default=False)
     """When set to ``true``, Sopel will send reminder as private message."""
@@ -34,7 +36,8 @@ class TellSection(types.StaticSection):
 
 
 def configure(config):
-    """
+    """Interactively configure the plugin.
+
     | name | example | purpose |
     | ---- | ------- | ------- |
     | use_private_reminder | false | Send reminders as private message |

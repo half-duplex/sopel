@@ -191,7 +191,8 @@ class HelpSection(types.StaticSection):
 
 
 def configure(config):
-    r"""
+    r"""Interactively configure plugin.
+
     | name | example | purpose |
     | ---- | ------- | ------- |
     | output | clbin | The pastebin provider to use for help output |

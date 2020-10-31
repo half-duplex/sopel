@@ -1,5 +1,6 @@
 # coding=utf-8
-"""
+"""Utilities for dealing with web content/APIs.
+
 *Availability: 3+, deprecated in 6.2.0*
 
 This web class will be removed in Sopel 8.0. As of Sopel 7.0, non-deprecated

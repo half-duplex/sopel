@@ -53,6 +53,8 @@ MAX_BYTES = 655360 * 2
 
 
 class UrlSection(types.StaticSection):
+    """Plugin configuration definition."""
+
     enable_auto_title = types.ValidatedAttribute(
         'enable_auto_title', bool, default=True)
     """Enable auto-title (enabled by default)"""
@@ -73,7 +75,8 @@ class UrlSection(types.StaticSection):
 
 
 def configure(config):
-    r"""
+    r"""Interactively configure the plugin.
+
     | name | example | purpose |
     | ---- | ------- | ------- |
     | enable_auto_title | yes | Enable auto-title. |
@@ -217,7 +220,8 @@ def title_auto(bot, trigger):
 
 
 def process_urls(bot, trigger, urls):
-    """
+    """Process a list of URLs, fetch redirects, dispatch to plugins.
+
     For each URL in the list, ensure that it isn't handled by another plugin.
     If not, find where it redirects to, if anywhere. If that redirected URL
     should be handled by another plugin, dispatch the callback for it.

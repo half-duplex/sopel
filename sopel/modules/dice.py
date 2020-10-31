@@ -18,6 +18,8 @@ from sopel.tools.calculation import eval_equation
 
 
 class DicePouch:
+    """A set of dice to manipulate."""
+
     def __init__(self, num_of_die, type_of_die, addition):
         """Initialize dice pouch and roll the dice.
 

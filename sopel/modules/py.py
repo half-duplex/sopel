@@ -16,6 +16,8 @@ from sopel.tools.web import quote
 
 
 class PySection(types.StaticSection):
+    """Plugin configuration definition."""
+
     oblique_instance = types.ValidatedAttribute(
         'oblique_instance',
         default='https://oblique.sopel.chat/')
@@ -23,7 +25,8 @@ class PySection(types.StaticSection):
 
 
 def configure(config):
-    """
+    """Interactively configure plugin.
+
     | name | example | purpose |
     | ---- | ------- | ------- |
     | oblique_instance | https://oblique.sopel.chat/ | The Oblique instance to use when evaluating Python expressions (see <https://github.com/sopel-irc/oblique>) |

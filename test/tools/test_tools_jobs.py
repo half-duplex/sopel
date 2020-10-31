@@ -19,6 +19,8 @@ enable = coretasks
 
 
 class WithJobMockException(Exception):
+    """Mock Exception for raising by jobs."""
+
     pass
 
 

@@ -28,6 +28,8 @@ INSTAGRAM_REGEX = r'(https?:\/\/(?:www\.){0,1}instagram\.com\/([a-zA-Z0-9_\.]{,3
 
 
 class ParseError(Exception):
+    """Response parsing failed."""
+
     pass
 
 

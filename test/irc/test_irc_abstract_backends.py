@@ -8,6 +8,8 @@ from sopel.tests.mocks import MockIRCBackend
 
 
 class BotCollector:
+    """Collects messages sent by tests."""
+
     def __init__(self):
         self.message_sent = []
 
