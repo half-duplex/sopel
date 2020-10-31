@@ -55,7 +55,7 @@ class Scheduler(jobs.Scheduler):
         super(Scheduler, self).__init__(manager)
         self._jobs = tools.SopelMemoryWithDefault(list)
 
-    def register(self, job):
+    def register(self, job):  # noqa: D102
         with self._mutex:
             self._jobs[job.get_plugin_name()].append(job)
         LOGGER.debug('Job registered: %s', str(job))
@@ -85,13 +85,13 @@ class Scheduler(jobs.Scheduler):
 
         return unregistered_jobs
 
-    def clear_jobs(self):
+    def clear_jobs(self):  # noqa: D102
         with self._mutex:
             self._jobs = tools.SopelMemoryWithDefault(list)
 
         LOGGER.debug('Successfully unregistered all jobs')
 
-    def remove_callable_job(self, callable):
+    def remove_callable_job(self, callable):  # noqa: D102
         plugin_name = getattr(callable, 'plugin_name', None)
         if not self._jobs[plugin_name]:
             return

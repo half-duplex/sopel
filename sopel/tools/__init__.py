@@ -582,7 +582,7 @@ class OutputRedirect(object):
 # We'll drop it in Sopel 8.0 because it has been here for far too long already.
 @deprecated('Use `print()` instead of sopel.tools.stdout', removed_in='8.0')
 def stdout(string):
-    """Deprecated console output wrapper."""
+    """Wrap print. Deprecated."""
     print(string)
 
 

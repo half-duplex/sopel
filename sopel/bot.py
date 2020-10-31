@@ -642,7 +642,7 @@ class Sopel(irc.AbstractBot):
         """Call a rule, applying any rate limits or other restrictions.
 
         :param rule: the function to call
-        :type rule: :class:`generic rule <Rule>`
+        :type rule: :class:`sopel.plugins.rules.Rule`
         :param sopel: a SopelWrapper instance
         :type sopel: :class:`SopelWrapper`
         :param Trigger trigger: the Trigger object for the line from the server

@@ -235,7 +235,7 @@ class PyModulePlugin(AbstractPluginHandler):
 
         self._module = None
 
-    def get_label(self):
+    def get_label(self):  # noqa: D102
         default_label = '%s plugin' % self.name
         module_doc = getattr(self._module, '__doc__', None)
 
@@ -245,7 +245,7 @@ class PyModulePlugin(AbstractPluginHandler):
         lines = inspect.cleandoc(module_doc).splitlines()
         return default_label if not lines else lines[0]
 
-    def get_meta_description(self):
+    def get_meta_description(self):  # noqa: D102
         return {
             'label': self.get_label(),
             'type': self.PLUGIN_TYPE,
@@ -253,23 +253,23 @@ class PyModulePlugin(AbstractPluginHandler):
             'source': self.module_name,
         }
 
-    def load(self):
+    def load(self):  # noqa: D102
         self._module = importlib.import_module(self.module_name)
 
-    def reload(self):
+    def reload(self):  # noqa: D102
         self._module = reload(self._module)
 
-    def is_loaded(self):
+    def is_loaded(self):  # noqa: D102
         return self._module is not None
 
-    def setup(self, bot):
+    def setup(self, bot):  # noqa: D102
         if self.has_setup():
             self._module.setup(bot)
 
-    def has_setup(self):
+    def has_setup(self):  # noqa: D102
         return hasattr(self._module, 'setup')
 
-    def register(self, bot):
+    def register(self, bot):  # noqa: D102
         relevant_parts = loader.clean_module(self._module, bot.config)
         for part in itertools.chain(*relevant_parts):
             # annotate all callables in relevant_parts with `plugin_name`
@@ -277,22 +277,22 @@ class PyModulePlugin(AbstractPluginHandler):
             setattr(part, 'plugin_name', self.name)
         bot.add_plugin(self, *relevant_parts)
 
-    def unregister(self, bot):
+    def unregister(self, bot):  # noqa: D102
         relevant_parts = loader.clean_module(self._module, bot.config)
         bot.remove_plugin(self, *relevant_parts)
 
-    def shutdown(self, bot):
+    def shutdown(self, bot):  # noqa: D102
         if self.has_shutdown():
             self._module.shutdown(bot)
 
-    def has_shutdown(self):
+    def has_shutdown(self):  # noqa: D102
         return hasattr(self._module, 'shutdown')
 
-    def configure(self, settings):
+    def configure(self, settings):  # noqa: D102
         if self.has_configure():
             self._module.configure(settings)
 
-    def has_configure(self):
+    def has_configure(self):  # noqa: D102
         return hasattr(self._module, 'configure')
 
 
@@ -367,14 +367,14 @@ class PyFilePlugin(PyModulePlugin):
 
         return mod
 
-    def get_meta_description(self):
+    def get_meta_description(self):  # noqa: D102
         data = super(PyFilePlugin, self).get_meta_description()
         data.update({
             'source': self.path,
         })
         return data
 
-    def load(self):
+    def load(self):  # noqa: D102
         self._module = self._load()
 
     def reload(self):
@@ -445,10 +445,10 @@ class EntryPointPlugin(PyModulePlugin):
         self.entry_point = entry_point
         super(EntryPointPlugin, self).__init__(entry_point.name)
 
-    def load(self):
+    def load(self):  # noqa: D102
         self._module = self.entry_point.load()
 
-    def get_meta_description(self):
+    def get_meta_description(self):  # noqa: D102
         data = super(EntryPointPlugin, self).get_meta_description()
         data.update({
             'source': str(self.entry_point),
