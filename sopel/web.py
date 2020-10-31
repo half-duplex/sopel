@@ -1,5 +1,6 @@
 # coding=utf-8
-"""
+"""Utilities for dealing with web content/APIs.
+
 *Availability: 3+, deprecated in 6.2.0*
 
 This web class will be removed in Sopel 8.0. As of Sopel 7.0, non-deprecated
@@ -152,7 +153,8 @@ def post(uri, query, limit_bytes=None, timeout=20, verify_ssl=True, return_heade
 
 # solely for use by get_urllib_object()
 class MockHttpResponse(httplib.HTTPResponse):
-    "Mock HTTPResponse with data that comes from requests."
+    """Mock HTTPResponse with data that comes from requests."""
+
     def __init__(self, response):
         self.headers = response.headers
         self.status = response.status_code
@@ -170,10 +172,11 @@ class MockHttpResponse(httplib.HTTPResponse):
 # input URI is UTF-8
 @deprecated
 def get_urllib_object(uri, timeout, headers=None, verify_ssl=True, data=None):  # pragma: no cover
-    """Return an HTTPResponse object for `uri` and `timeout` and `headers`. Deprecated
+    """Perform a HTTP request.
 
+    Deprecated.
+    Returns a HTTPResponse object.
     """
-
     if headers is None:
         headers = default_headers
     else:

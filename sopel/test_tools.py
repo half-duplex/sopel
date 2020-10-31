@@ -1,5 +1,5 @@
 # coding=utf-8
-"""This module has classes and functions that can help in writing tests.
+"""Classes and functions that can help in writing tests.
 
 .. note::
 
@@ -48,6 +48,12 @@ if sys.version_info.major >= 3:
 
 
 class MockConfig(sopel.config.Config):
+    """
+    Deprecated mock config.
+
+    Use ``configfactory`` fixture instead.
+    """
+
     @sopel.tools.deprecated('use configfactory fixture instead', '7.0', '8.0')
     def __init__(self):
         self.filename = tempfile.mkstemp()[1]
@@ -64,6 +70,12 @@ class MockConfig(sopel.config.Config):
 
 
 class MockSopel(object):
+    """
+    Deprecated mock sopel bot.
+
+    Use ``botfactory`` fixture instead.
+    """
+
     @sopel.tools.deprecated('use botfactory fixture instead', '7.0', '8.0')
     def __init__(self, nick, admin=False, owner=False):
         self.nick = nick
@@ -126,6 +138,12 @@ class MockSopel(object):
 
 
 class MockSopelWrapper(SopelWrapper):
+    """
+    Deprecated mock sopel wrapper.
+
+    Use ``sopel.bot.SopelWrapper`` instead.
+    """
+
     @sopel.tools.deprecated('use sopel.bot.SopelWrapper instead', '7.0', '8.0')
     def __init__(self, *args, **kwargs):
         super(MockSopelWrapper, self).__init__(*args, **kwargs)

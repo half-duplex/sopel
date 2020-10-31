@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-reddit.py - Sopel Reddit Plugin
+"""reddit.py - Sopel Reddit Plugin.
+
 Copyright 2012, Elsie Powell, embolalia.com
 Copyright 2019, dgw, technobabbl.es
 Copyright 2019, deathbybandaid, deathbybandaid.net
@@ -217,7 +217,7 @@ def say_post_info(bot, trigger, id_, show_link=True, show_comments_link=False):
 @plugin.url(comment_url)
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def comment_info(bot, trigger, match):
-    """Shows information about the linked comment"""
+    """Show information about the linked comment."""
     try:
         c = bot.memory['reddit_praw'].comment(match.group(1))
     except prawcore.exceptions.NotFound:
@@ -250,7 +250,7 @@ def comment_info(bot, trigger, match):
 
 
 def subreddit_info(bot, trigger, match, commanded=False):
-    """Shows information about the given subreddit"""
+    """Show information about the given subreddit."""
     match_lower = match.lower()
     if match_lower in ['all', 'popular']:
         message = ('[REDDIT] {link}{nsfw} | {public_description}')
@@ -313,7 +313,7 @@ def subreddit_info(bot, trigger, match, commanded=False):
 
 
 def redditor_info(bot, trigger, match, commanded=False):
-    """Shows information about the given Redditor"""
+    """Show information about the given Redditor."""
     try:
         u = bot.memory['reddit_praw'].redditor(match)
         u.id  # shortcut to check if the user exists or not
@@ -361,9 +361,9 @@ def auto_subreddit_info(bot, trigger, match):
 @plugin.example('.setsfw false')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def set_channel_sfw(bot, trigger):
-    """
-    Sets the Safe for Work status (true or false) for the current
-    channel. Defaults to false.
+    """Set the Safe for Work status for the current channel.
+
+    Defaults to false.
     """
     param = 'true'
     if trigger.group(2) and trigger.group(3):
@@ -380,9 +380,9 @@ def set_channel_sfw(bot, trigger):
 @plugin.example('.getsfw [channel]')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def get_channel_sfw(bot, trigger):
-    """
-    Gets the preferred channel's Safe for Work status, or the current
-    channel's status if no channel given.
+    """Get the preferred channel's Safe for Work status.
+
+    Checks current channel if none is specified.
     """
     channel = trigger.group(2)
     if not channel:
@@ -408,8 +408,8 @@ def get_channel_sfw(bot, trigger):
 @plugin.example('.setspoilfree false')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def set_channel_spoiler_free(bot, trigger):
-    """
-    Sets the Spoiler-Free status (true or false) for the current channel.
+    """Set the Spoiler-Free status for the current channel.
+
     Defaults to false.
     """
     param = 'true'
@@ -427,9 +427,9 @@ def set_channel_spoiler_free(bot, trigger):
 @plugin.example('.getspoilfree [channel]')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def get_channel_spoiler_free(bot, trigger):
-    """
-    Gets the channel's Spoiler-Free status, or the current channel's
-    status if no channel given.
+    """Get a channel's Spoiler-Free status.
+
+    Checks current channel if none is specified.
     """
     channel = trigger.group(2)
     if not channel:

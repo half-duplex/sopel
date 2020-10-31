@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Regression tests"""
+"""Regression tests."""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from sopel import coretasks, tools
@@ -14,9 +14,9 @@ enable = coretasks
 
 
 def test_bot_legacy_permissions(configfactory, botfactory, triggerfactory):
-    """
-    Make sure permissions match after being updated from both RPL_NAMREPLY
-    and RPL_WHOREPLY, #1482
+    """Check permissions match when updated with RPL_NAMREPLY and RPL_WHOREPLY.
+
+    #1482
     """
     mockbot = botfactory(configfactory('default.cfg', TMP_CONFIG))
     nick = tools.Identifier("Admin")

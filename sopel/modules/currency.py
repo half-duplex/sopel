@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-currency.py - Sopel Currency Conversion Plugin
+"""currency.py - Sopel Currency Conversion Plugin.
+
 Copyright 2013, Elsie Powell, embolalia.com
 Copyright 2019, Mikkel Jeppesen
 Licensed under the Eiffel Forum License 2.
@@ -38,6 +38,8 @@ rates_updated = 0.0
 
 
 class CurrencySection(types.StaticSection):
+    """Plugin configuration definition."""
+
     fixer_io_key = types.ValidatedAttribute('fixer_io_key', default=None)
     """Optional API key for Fixer.io (increases currency support)"""
     auto_convert = types.ValidatedAttribute('auto_convert',
@@ -47,11 +49,12 @@ class CurrencySection(types.StaticSection):
 
 
 def configure(config):
-    """
+    r"""Interactively configure the plugin.
+
     | name | example | purpose |
     | ---- | ------- | ------- |
-    | auto\\_convert | False | Whether to convert currencies without an explicit command |
-    | fixer\\_io\\_key | 0123456789abcdef0123456789abcdef | Optional API key for Fixer.io (increases currency support) |
+    | auto\_convert | False | Whether to convert currencies without an explicit command |
+    | fixer\_io\_key | 0123456789abcdef0123456789abcdef | Optional API key for Fixer.io (increases currency support) |
     """
     config.define_section('currency', CurrencySection, validate=False)
     config.currency.configure_setting('fixer_io_key', 'Optional API key for Fixer.io (leave blank to use exchangeratesapi.io):')
@@ -63,13 +66,15 @@ def setup(bot):
 
 
 class FixerError(Exception):
-    """A Fixer.io API Error Exception"""
+    """Fixer.io API Error Exception."""
+
     def __init__(self, status):
         super(FixerError, self).__init__("FixerError: {}".format(status))
 
 
 class UnsupportedCurrencyError(Exception):
-    """A currency is currently not supported by the API"""
+    """Currency is currently not supported by the API."""
+
     def __init__(self, currency):
         super(UnsupportedCurrencyError, self).__init__(currency)
 
@@ -86,7 +91,7 @@ def build_reply(amount, base, target, out_string):
 
 
 def exchange(bot, match):
-    """Show the exchange rate between two currencies"""
+    """Show the exchange rate between two currencies."""
     if not match:
         bot.reply(UNRECOGNIZED_INPUT)
         return

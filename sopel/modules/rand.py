@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-rand.py - Rand Plugin
+"""rand.py - Rand Plugin.
+
 Copyright 2013, Ari Koivula, <ari@koivu.la>
 Licensed under the Eiffel Forum License 2.
 
@@ -22,7 +22,7 @@ from sopel import plugin
 @plugin.example('.rand 10 99', r'random\(10, 99\): \d\d', re=True, repeat=10)
 @plugin.output_prefix('[rand] ')
 def rand(bot, trigger):
-    """Replies with a random number between first and second argument."""
+    """Reply with a random number between first and second argument."""
     arg1 = trigger.group(3)
     arg2 = trigger.group(4)
 

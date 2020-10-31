@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-safety.py - Alerts about malicious URLs
+"""safety.py - Alerts about malicious URLs.
+
 Copyright © 2014, Elad Alfassa, <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
@@ -47,6 +47,8 @@ cache_limit = 512
 
 
 class SafetySection(types.StaticSection):
+    """Plugin configuration definition."""
+
     enabled_by_default = types.ValidatedAttribute('enabled_by_default',
                                                   bool,
                                                   default=True)
@@ -58,12 +60,13 @@ class SafetySection(types.StaticSection):
 
 
 def configure(config):
-    """
+    r"""Interactively configure plugin.
+
     | name | example | purpose |
     | ---- | ------- | ------- |
-    | enabled\\_by\\_default | True | Enable URL safety in all channels where it isn't explicitly disabled. |
-    | known\\_good | sopel.chat,dftba.net | List of "known good" domains to ignore. |
-    | vt\\_api\\_key | 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef | Optional VirusTotal API key to improve malicious URL detection |
+    | enabled\_by\_default | True | Enable URL safety in all channels where it isn't explicitly disabled. |
+    | known\_good | sopel.chat,dftba.net | List of "known good" domains to ignore. |
+    | vt\_api\_key | 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef | Optional VirusTotal API key to improve malicious URL detection |
     """
     config.define_section('safety', SafetySection)
     config.safety.configure_setting(
@@ -120,7 +123,7 @@ def _download_malwaredomains_db(path):
 @plugin.priority('high')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def url_handler(bot, trigger):
-    """Checks for malicious URLs"""
+    """Check for malicious URLs."""
     check = True    # Enable URL checking
     strict = False  # Strict mode: kick on malicious URL
     positives = 0   # Number of engines saying it's malicious
@@ -209,7 +212,7 @@ def url_handler(bot, trigger):
 @plugin.command('safety')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def toggle_safety(bot, trigger):
-    """Set safety setting for channel"""
+    """Set safety setting for channel."""
     if not trigger.admin and bot.channels[trigger.sender].privileges[trigger.nick] < plugin.OP:
         bot.reply('Only channel operators can change safety settings')
         return
@@ -228,7 +231,7 @@ def toggle_safety(bot, trigger):
 # Code above also calls this if there are too many cache entries
 @plugin.interval(24 * 60 * 60)
 def _clean_cache(bot):
-    """Cleans up old entries in URL safety cache."""
+    """Clean up old entries in URL safety cache."""
     if bot.memory['safety_cache_lock'].acquire(False):
         LOGGER.info('Starting safety cache cleanup...')
         try:

@@ -1,4 +1,5 @@
 # coding=utf-8
+"""Tests for ``sopel.config``."""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
@@ -66,6 +67,8 @@ if sys.version_info.major < 3:
 
 
 class FakeConfigSection(types.StaticSection):
+    """Mock config definition."""
+
     valattr = types.ValidatedAttribute('valattr')
     listattr = types.ListAttribute('listattr')
     choiceattr = types.ChoiceAttribute('choiceattr', ['spam', 'egg', 'bacon'])
@@ -76,6 +79,8 @@ class FakeConfigSection(types.StaticSection):
 
 
 class SpamSection(types.StaticSection):
+    """Another mock config section."""
+
     eggs = types.ListAttribute('eggs')
     bacons = types.ListAttribute('bacons', strip=False)
     cheeses = types.ListAttribute('cheeses')
@@ -260,7 +265,7 @@ def test_configparser_multi_lines(multi_fakeconfig):
 
 
 def test_save_unmodified_config(multi_fakeconfig):
-    """Assert type attributes are kept as they should be"""
+    """Assert type attributes are kept as they should be."""
     multi_fakeconfig.save()
     saved_config = config.Config(multi_fakeconfig.filename)
     saved_config.define_section('fake', FakeConfigSection)
@@ -300,7 +305,7 @@ def test_save_unmodified_config(multi_fakeconfig):
 
 
 def test_save_modified_config(multi_fakeconfig):
-    """Assert modified values are restored properly"""
+    """Assert modified values are restored properly."""
     multi_fakeconfig.fake.choiceattr = 'spam'
     multi_fakeconfig.spam.eggs = [
         'one',

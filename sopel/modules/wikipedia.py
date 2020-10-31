@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-wikipedia.py - Sopel Wikipedia Plugin
+"""wikipedia.py - Sopel Wikipedia Plugin.
+
 Copyright 2013 Elsie Powell - embolalia.com
 Licensed under the Eiffel Forum License 2.
 
@@ -26,6 +26,8 @@ PLUGIN_OUTPUT_PREFIX = '[wikipedia] '
 
 
 class WikiParser(HTMLParser):
+    """Parse Wiki HTML for text content."""
+
     def __init__(self, section_name):
         HTMLParser.__init__(self)
         self.consume = True
@@ -86,6 +88,8 @@ class WikiParser(HTMLParser):
 
 
 class WikipediaSection(types.StaticSection):
+    """Plugin configuration definition."""
+
     default_lang = types.ValidatedAttribute('default_lang', default='en')
     """The default language to find articles from (same as Wikipedia language subdomain)."""
     lang_per_channel = types.ValidatedAttribute('lang_per_channel')
@@ -100,10 +104,11 @@ def setup(bot):
 
 
 def configure(config):
-    """
+    r"""Interactively configure plugin.
+
     | name | example | purpose |
     | ---- | ------- | ------- |
-    | default\\_lang | en | The default language to find articles from (same as Wikipedia language subdomain) |
+    | default\_lang | en | The default language to find articles from (same as Wikipedia language subdomain) |
     """
     config.define_section('wikipedia', WikipediaSection)
     config.wikipedia.configure_setting(
@@ -133,7 +138,7 @@ def choose_lang(bot, trigger):
 
 
 def mw_search(server, query, num):
-    """Search a MediaWiki site
+    """Search a MediaWiki site.
 
     Searches the specified MediaWiki server for the given query, and returns
     the specified number of results.
@@ -168,7 +173,7 @@ def say_snippet(bot, trigger, server, query, show_url=True):
 
 
 def mw_snippet(server, query):
-    """Retrieves a snippet of the given page from the given MediaWiki server."""
+    """Retrieve a snippet of the given page from the given MediaWiki server."""
     snippet_url = ('https://' + server + '/w/api.php?format=json'
                    '&action=query&prop=extracts&exintro&explaintext'
                    '&exchars=300&redirects&titles=')
@@ -197,10 +202,7 @@ def say_section(bot, trigger, server, query, section):
 
 
 def mw_section(server, query, section):
-    """
-    Retrieves a snippet from the specified section from the given page
-    on the given server.
-    """
+    """Retrieve a snippet of a section section of a page."""
     sections_url = ('https://{0}/w/api.php?format=json&redirects'
                     '&action=parse&prop=sections&page={1}'
                     .format(server, query))
@@ -242,7 +244,7 @@ def mw_section(server, query, section):
 @plugin.url(r'https?:\/\/([a-z]+\.wikipedia\.org)\/wiki\/((?!File\:)[^ #]+)#?([^ ]*)')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def mw_info(bot, trigger, match=None):
-    """Retrieves and outputs a snippet of the linked page."""
+    """Retrieve and outputs a snippet of the linked page."""
     if match.group(3):
         if match.group(3).startswith('cite_note-'):  # Don't bother trying to retrieve a snippet when cite-note is linked
             say_snippet(bot, trigger, match.group(1), unquote(match.group(2)), show_url=False)

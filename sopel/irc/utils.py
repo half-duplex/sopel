@@ -1,4 +1,5 @@
 # coding=utf-8
+"""Utilities."""
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
@@ -67,6 +68,7 @@ class CapReq(object):
         For more information on how capability requests work, see the
         documentation for :meth:`sopel.irc.AbstractBot.cap_req`.
     """
+
     def __init__(self, prefix, module, failure=None, arg=None, success=None):
         def nop(bot, cap):
             pass

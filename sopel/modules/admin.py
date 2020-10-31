@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-admin.py - Sopel Admin Plugin
+"""admin.py - Sopel Admin Plugin.
+
 Copyright 2010-2011, Sean B. Palmer (inamidst.com) and Michael Yanovich
 (yanovich.net)
 Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>
@@ -17,6 +17,8 @@ from sopel.config import types
 
 
 class AdminSection(types.StaticSection):
+    """Plugin configuration definition."""
+
     hold_ground = types.ValidatedAttribute('hold_ground', bool, default=False)
     """Auto re-join on kick"""
     auto_accept_invite = types.ValidatedAttribute('auto_accept_invite', bool,
@@ -25,11 +27,12 @@ class AdminSection(types.StaticSection):
 
 
 def configure(config):
-    """
+    r"""Interactively configure plugin.
+
     | name | example | purpose |
     | ---- | ------- | ------- |
-    | hold\\_ground | False | Auto-rejoin the channel after being kicked. |
-    | auto\\_accept\\_invite | True | Auto-join channels when invited. |
+    | hold\_ground | False | Auto-rejoin the channel after being kicked. |
+    | auto\_accept\_invite | True | Auto-join channels when invited. |
     """
     config.define_section('admin', AdminSection)
     config.admin.configure_setting('hold_ground',
@@ -43,12 +46,16 @@ def setup(bot):
 
 
 class InvalidSection(Exception):
+    """Exception for missing configuration sections."""
+
     def __init__(self, section):
         super(InvalidSection, self).__init__(self, 'Section [{}] does not exist.'.format(section))
         self.section = section
 
 
 class InvalidSectionOption(Exception):
+    """Exception for invalid options in a configuration section."""
+
     def __init__(self, section, option):
         super(InvalidSectionOption, self).__init__(self, 'Section [{}] does not have option \'{}\'.'.format(section, option))
         self.section = section
@@ -56,7 +63,7 @@ class InvalidSectionOption(Exception):
 
 
 def _get_config_channels(channels):
-    """List"""
+    """Parse channel list from config."""
     for channel_info in channels:
         if ' ' in channel_info:
             yield channel_info.split(' ', 1)
@@ -185,9 +192,9 @@ def quit(bot, trigger):
 @plugin.priority('low')
 @plugin.example('.say #YourPants Does anyone else smell neurotoxin?')
 def say(bot, trigger):
-    """
-    Send a message to a given channel or nick. Can only be done in privmsg by
-    an admin.
+    """Send a message to a given channel or nick.
+
+    Can only be done in privmsg by an admin.
     """
     if trigger.group(2) is None:
         return
@@ -205,9 +212,9 @@ def say(bot, trigger):
 @plugin.command('me')
 @plugin.priority('low')
 def me(bot, trigger):
-    """
-    Send an ACTION (/me) to a given channel or nick. Can only be done in
-    privmsg by an admin.
+    """Send an ACTION (/me) to a given channel or nick.
+
+    Can only be done in privmsg by an admin.
     """
     if trigger.group(2) is None:
         return
@@ -232,9 +239,7 @@ def invite_join(bot, trigger):
 @plugin.event('KICK')
 @plugin.priority('low')
 def hold_ground(bot, trigger):
-    """
-    This function monitors all kicks across all channels Sopel is in. If it
-    detects that it is the one kicked it'll automatically join that channel.
+    """Monitor KICK messages to rejoin if kicked.
 
     WARNING: This may not be needed and could cause problems if Sopel becomes
     annoying. Please use this with caution.

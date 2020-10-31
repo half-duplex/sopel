@@ -1,4 +1,5 @@
 # coding=utf-8
+"""The Bot."""
 # Copyright 2008, Sean B. Palmer, inamidst.com
 # Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 # Copyright 2012-2015, Elsie Powell, http://embolalia.com
@@ -53,6 +54,8 @@ else:
 
 
 class Sopel(irc.AbstractBot):
+    """Concrete Sopel bot."""
+
     def __init__(self, config, daemon=False):
         super(Sopel, self).__init__(config)
         self._daemon = daemon  # Used for iPython. TODO something saner here
@@ -131,7 +134,7 @@ class Sopel(irc.AbstractBot):
 
     @property
     def command_groups(self):
-        """A mapping of plugin names to lists of their commands.
+        """Map of plugin names to lists of their commands.
 
         .. versionchanged:: 7.1
             This attribute is now generated on the fly from the registered list
@@ -156,7 +159,7 @@ class Sopel(irc.AbstractBot):
 
     @property
     def doc(self):
-        """A dictionary of command names to their documentation.
+        """Map of command names to their documentation.
 
         Each command is mapped to its docstring and any available examples, if
         declared in the plugin's code.
@@ -188,7 +191,7 @@ class Sopel(irc.AbstractBot):
 
     @property
     def hostmask(self):
-        """The current hostmask for the bot :class:`sopel.tools.target.User`.
+        """Get current hostmask for the bot :class:`sopel.tools.target.User`.
 
         :return: the bot's current hostmask
         :rtype: str
@@ -823,7 +826,7 @@ class Sopel(irc.AbstractBot):
 
     @property
     def running_triggers(self):
-        """Current active threads for triggers.
+        """Get current active threads for triggers.
 
         :return: the running thread(s) currently processing trigger(s)
         :rtype: :term:`iterable`
@@ -853,7 +856,7 @@ class Sopel(irc.AbstractBot):
                 t for t in running_triggers if t.is_alive()]
 
     def on_scheduler_error(self, scheduler, exc):
-        """Called when the Job Scheduler fails.
+        """Handle failed Job Scheduler.
 
         :param scheduler: the job scheduler that errored
         :type scheduler: :class:`sopel.plugins.jobs.Scheduler`
@@ -866,7 +869,7 @@ class Sopel(irc.AbstractBot):
         self.error(exception=exc)
 
     def on_job_error(self, scheduler, job, exc):
-        """Called when a job from the Job Scheduler fails.
+        """Handle failed job from the Job Scheduler.
 
         :param scheduler: the job scheduler responsible for the errored ``job``
         :type scheduler: :class:`sopel.plugins.jobs.Scheduler`
@@ -881,9 +884,9 @@ class Sopel(irc.AbstractBot):
         self.error(exception=exc)
 
     def error(self, trigger=None, exception=None):
-        """Called internally when a plugin causes an error.
+        r"""Handle uncaught plugin errors.
 
-        :param trigger: the ``Trigger``\\ing line (if available)
+        :param trigger: the ``Trigger``\ing line (if available)
         :type trigger: :class:`sopel.trigger.Trigger`
         :param Exception exception: the exception raised by the error (if
                                     available)
@@ -933,7 +936,7 @@ class Sopel(irc.AbstractBot):
         return False
 
     def _shutdown(self):
-        """Internal bot shutdown method."""
+        """Shut down the bot."""
         LOGGER.info('Shutting down')
         # Stop Job Scheduler
         LOGGER.info('Stopping the Job Scheduler.')
@@ -1096,6 +1099,7 @@ class SopelWrapper(object):
     to the sender (either a channel or in a private message) and even to
     :meth:`reply to someone<reply>` in a channel.
     """
+
     def __init__(self, sopel, trigger, output_prefix=''):
         if not output_prefix:
             # Just in case someone passes in False, None, etc.
@@ -1200,7 +1204,7 @@ class SopelWrapper(object):
         self._bot.reply(message, destination, reply_to, notice)
 
     def kick(self, nick, channel=None, message=None):
-        """Override ``Sopel.kick`` to kick in a channel
+        """Override ``Sopel.kick`` to kick in a channel.
 
         :param str nick: nick to kick out of the ``channel``
         :param str channel: optional channel to kick ``nick`` from

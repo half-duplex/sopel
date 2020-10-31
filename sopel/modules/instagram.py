@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-instagram.py - Sopel Instagram Plugin
+"""instagram.py - Sopel Instagram Plugin.
+
 Copyright 2018, Sopel contributors
 Licensed under the Eiffel Forum License 2.
 
@@ -28,6 +28,8 @@ INSTAGRAM_REGEX = r'(https?:\/\/(?:www\.){0,1}instagram\.com\/([a-zA-Z0-9_\.]{,3
 
 
 class ParseError(Exception):
+    """Response parsing failed."""
+
     pass
 
 

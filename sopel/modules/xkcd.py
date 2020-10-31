@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-xkcd.py - Sopel xkcd Plugin
+"""xkcd.py - Sopel xkcd Plugin.
+
 Copyright 2010, Michael Yanovich (yanovich.net), and Morgan Goose
 Copyright 2012, Lior Ramati
 Copyright 2013, Elsie Powell (embolalia.com)
@@ -59,7 +59,7 @@ def web_search(query):
 @plugin.example(".xkcd", user_help=True)
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def xkcd(bot, trigger):
-    """Finds an xkcd comic strip.
+    """Find an xkcd comic strip.
 
     Takes one of 3 inputs:
 

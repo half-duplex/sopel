@@ -1,4 +1,5 @@
 # coding=utf-8
+"""Abstract Backends."""
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
@@ -16,6 +17,7 @@ class AbstractIRCBackend(object):
     Some methods of this class **MUST** be overridden by a subclass, or the
     backend implementation will not function correctly.
     """
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -27,7 +29,7 @@ class AbstractIRCBackend(object):
         raise NotImplementedError
 
     def on_irc_error(self, pretrigger):
-        """Action to perform when the server sends an error event.
+        """Perform action when the server sends an error event.
 
         :param pretrigger: PreTrigger object with the error event
         :type pretrigger: :class:`sopel.trigger.PreTrigger`

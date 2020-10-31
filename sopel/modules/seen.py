@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-seen.py - Sopel Seen Plugin
+"""seen.py - Sopel Seen Plugin.
+
 Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 Copyright 2019, Sopel contributors
@@ -20,7 +20,7 @@ from sopel.tools.time import seconds_to_human
 @plugin.command('seen')
 @plugin.output_prefix('[seen] ')
 def seen(bot, trigger):
-    """Reports when and where the user was last seen."""
+    """Report when and where the user was last seen."""
     if not trigger.group(2):
         bot.reply(
             "Use `%sseen <nick>` to know when <nick> was last seen."

@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-url.py - Sopel URL Title Plugin
+"""url.py - Sopel URL Title Plugin.
+
 Copyright 2010-2011, Michael Yanovich (yanovich.net) & Kenneth Sham
 Copyright 2012-2013, Elsie Powell
 Copyright 2013, Lior Ramati <firerogue517@gmail.com>
@@ -53,6 +53,8 @@ MAX_BYTES = 655360 * 2
 
 
 class UrlSection(types.StaticSection):
+    """Plugin configuration definition."""
+
     enable_auto_title = types.ValidatedAttribute(
         'enable_auto_title', bool, default=True)
     """Enable auto-title (enabled by default)"""
@@ -73,15 +75,16 @@ class UrlSection(types.StaticSection):
 
 
 def configure(config):
-    """
+    r"""Interactively configure the plugin.
+
     | name | example | purpose |
     | ---- | ------- | ------- |
     | enable_auto_title | yes | Enable auto-title. |
-    | exclude | https?://git\\\\.io/.* | A list of regular expressions for URLs for which the title should not be shown. |
-    | exclusion\\_char | ! | A character (or string) which, when immediately preceding a URL, will stop the URL's title from being shown. |
-    | shorten\\_url\\_length | 72 | If greater than 0, the title fetcher will include a TinyURL version of links longer than this many characters. |
-    | enable\\_private\\_resolution | False | Enable URL lookups for RFC1918 addresses. |
-    | enable\\_dns\\_resolution | False | Enable DNS resolution for all domains to validate if there are RFC1918 resolutions. |
+    | exclude | https?://git\\.io/.* | A list of regular expressions for URLs for which the title should not be shown. |
+    | exclusion\_char | ! | A character (or string) which, when immediately preceding a URL, will stop the URL's title from being shown. |
+    | shorten\_url\_length | 72 | If greater than 0, the title fetcher will include a TinyURL version of links longer than this many characters. |
+    | enable\_private\_resolution | False | Enable URL lookups for RFC1918 addresses. |
+    | enable\_dns\_resolution | False | Enable DNS resolution for all domains to validate if there are RFC1918 resolutions. |
     """
     config.define_section('url', UrlSection)
     config.url.configure_setting(
@@ -159,10 +162,7 @@ def shutdown(bot):
     online=True, vcr=True)
 @plugin.output_prefix('[url] ')
 def title_command(bot, trigger):
-    """
-    Show the title or URL information for the given URL, or the last URL seen
-    in this channel.
-    """
+    """Show title or URL info for a given URL or the last URL in the channel."""
     if not trigger.group(2):
         if trigger.sender not in bot.memory['last_seen_url']:
             return
@@ -188,10 +188,10 @@ def title_command(bot, trigger):
 @plugin.rule(r'(?u).*(https?://\S+).*')
 @plugin.output_prefix('[url] ')
 def title_auto(bot, trigger):
-    """
-    Automatically show titles for URLs. For shortened URLs/redirects, find
-    where the URL redirects to and show the title for that (or call a function
-    from another plugin to give more information).
+    """Automatically show titles for URLs.
+
+    For shortened URLs/redirects, find where the URL redirects to and show the title
+    for that (or call a function from another plugin to give more information).
     """
     # Enabled or disabled by feature flag
     if not bot.settings.url.enable_auto_title:
@@ -220,7 +220,8 @@ def title_auto(bot, trigger):
 
 
 def process_urls(bot, trigger, urls):
-    """
+    """Process a list of URLs, fetch redirects, dispatch to plugins.
+
     For each URL in the list, ensure that it isn't handled by another plugin.
     If not, find where it redirects to, if anywhere. If that redirected URL
     should be handled by another plugin, dispatch the callback for it.
@@ -364,7 +365,7 @@ def get_hostname(url):
 
 
 def get_or_create_shorturl(bot, url):
-    """Get or create a short URL for ``url``
+    """Get or create a short URL for ``url``.
 
     :param bot: Sopel instance
     :param str url: URL to get or create a short URL for
@@ -386,7 +387,7 @@ def get_or_create_shorturl(bot, url):
 
 
 def get_tinyurl(url):
-    """Returns a shortened tinyURL link of the URL"""
+    """Return a shortened tinyURL link of the URL."""
     base_url = "https://tinyurl.com/api-create.php"
     tinyurl = "%s?%s" % (base_url, web.urlencode({'url': url}))
     try:

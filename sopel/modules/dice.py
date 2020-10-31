@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-dice.py - Sopel Dice Plugin
+"""dice.py - Sopel Dice Plugin.
+
 Copyright 2010-2013, Dimitri "Tyrope" Molenaars, TyRope.nl
 Copyright 2013, Ari Koivula, <ari@koivu.la>
 Licensed under the Eiffel Forum License 2.
@@ -18,6 +18,8 @@ from sopel.tools.calculation import eval_equation
 
 
 class DicePouch:
+    """A set of dice to manipulate."""
+
     def __init__(self, num_of_die, type_of_die, addition):
         """Initialize dice pouch and roll the dice.
 
@@ -50,7 +52,6 @@ class DicePouch:
         Args:
             n: the number of dice to drop.
         """
-
         sorted_x = sorted(self.dice.items(), key=operator.itemgetter(0))
 
         for i, count in sorted_x:
@@ -114,7 +115,7 @@ class DicePouch:
         return result
 
     def get_number_of_faces(self):
-        """Returns sum of different faces for dropped and not dropped dice
+        """Return sum of different faces for dropped and not dropped dice.
 
         This can be used to estimate, whether the result can be shown in
         compressed form in a reasonable amount of space.
@@ -180,7 +181,7 @@ def _roll_dice(bot, dice_expression):
 @plugin.example(".roll 1d6", user_help=True)
 @plugin.output_prefix('[dice] ')
 def roll(bot, trigger):
-    """Rolls dice and reports the result.
+    """Roll dice and reports the result.
 
     The dice roll follows this format: XdY[vZ][+N][#COMMENT]
 

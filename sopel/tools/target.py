@@ -1,4 +1,5 @@
 # coding=utf-8
+"""Sopel's Targets."""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import functools
@@ -15,6 +16,7 @@ class User(object):
     :param str user: the user's local username ("user" in `user@host.name`)
     :param str host: the user's hostname ("host.name" in `user@host.name`)
     """
+
     def __init__(self, nick, user, host):
         assert isinstance(nick, Identifier)
         self.nick = nick
@@ -59,6 +61,7 @@ class Channel(object):
     :param name: the channel name
     :type name: :class:`~.tools.Identifier`
     """
+
     def __init__(self, name):
         assert isinstance(name, Identifier)
         self.name = name

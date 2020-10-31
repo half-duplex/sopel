@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-tld.py - Sopel TLD Plugin
+"""tld.py - Sopel TLD Plugin.
+
 Copyright 2009-10, Michael Yanovich, yanovich.net
 Copyright 2020, dgw, technobabbl.es
 Licensed under the Eiffel Forum License 2.
@@ -80,6 +80,8 @@ def shutdown(bot):
 
 
 class WikipediaTLDListParser(HTMLParser):
+    """Parses Wiki HTML tables for TLD data."""
+
     def __init__(self):
         HTMLParser.__init__(self)
         self.in_cell = False

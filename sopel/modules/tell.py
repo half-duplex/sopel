@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-tell.py - Sopel Tell and Ask Plugin
+"""tell.py - Sopel Tell and Ask Plugin.
+
 Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright 2019, dgw, technobabbl.es
 Licensed under the Eiffel Forum License 2.
@@ -25,6 +25,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 class TellSection(types.StaticSection):
+    """Plugin configuration definition."""
+
     use_private_reminder = types.ValidatedAttribute(
         'use_private_reminder', parse=bool, default=False)
     """When set to ``true``, Sopel will send reminder as private message."""
@@ -34,7 +36,8 @@ class TellSection(types.StaticSection):
 
 
 def configure(config):
-    """
+    """Interactively configure the plugin.
+
     | name | example | purpose |
     | ---- | ------- | ------- |
     | use_private_reminder | false | Send reminders as private message |
@@ -134,7 +137,7 @@ def shutdown(bot):
 @plugin.nickname_command('tell', 'ask')
 @plugin.example('$nickname, tell dgw he broke something again.')
 def f_remind(bot, trigger):
-    """Give someone a message the next time they're seen"""
+    """Give someone a message the next time they're seen."""
     teller = trigger.nick
     verb = trigger.group(1)
 

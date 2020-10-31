@@ -1,7 +1,9 @@
 # coding=utf-8
+"""Concrete Backends."""
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
+#
 # When working on core IRC protocol related features, consult protocol
 # documentation at http://www.irchelp.org/irchelp/rfc/
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -72,6 +74,7 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
     :param int server_timeout: connection timeout in seconds
     :param int ping_timeout: ping timeout in seconds
     """
+
     def __init__(self, bot, server_timeout=None, ping_timeout=None, **kwargs):
         AbstractIRCBackend.__init__(self, bot)
         asynchat.async_chat.__init__(self)
@@ -151,13 +154,13 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
             self.handle_close()
 
     def handle_connect(self):
-        """Called when the active opener's socket actually makes a connection."""
+        """Handle active opener's new accepted connection."""
         LOGGER.info('Connection accepted by the server...')
         self.timeout_scheduler.start()
         self.bot.on_connect()
 
     def handle_close(self):
-        """Called when the socket is closed."""
+        """Handle closed socket."""
         LOGGER.debug('Stopping timeout watchdog')
         self.timeout_scheduler.stop()
         LOGGER.info('Closing connection')
@@ -165,7 +168,7 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
         self.bot.on_close()
 
     def handle_error(self):
-        """Called when an exception is raised and not otherwise handled.
+        """Handle unhandled exceptions.
 
         This method is an override of :meth:`asyncore.dispatcher.handle_error`,
         the :class:`asynchat.async_chat` being a subclass of
@@ -210,12 +213,12 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
         self.bot.on_message(line)
 
     def on_scheduler_error(self, scheduler, exc):
-        """Called when the Job Scheduler fails."""
+        """Handle Job Scheduler failures."""
         LOGGER.exception('Error with the timeout scheduler: %s', exc)
         self.handle_close()
 
     def on_job_error(self, scheduler, job, exc):
-        """Called when a job from the Job Scheduler fails."""
+        """Handle failures of a job from the Job Scheduler."""
         LOGGER.exception('Error with the timeout scheduler: %s', exc)
         self.handle_close()
 
@@ -230,6 +233,7 @@ class SSLAsynchatBackend(AsynchatBackend):
     :param str ca_certs: filesystem path to a CA Certs file containing trusted
                          root certificates
     """
+
     def __init__(self, bot, verify_ssl=True, ca_certs=None, **kwargs):
         AsynchatBackend.__init__(self, bot, **kwargs)
         self.verify_ssl = verify_ssl

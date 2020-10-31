@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-help.py - Sopel Help Plugin
+"""help.py - Sopel Help Plugin.
+
 Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright © 2013, Elad Alfassa, <elad@fedoraproject.org>
 Copyright © 2018, Adam Erdman, pandorah.org
@@ -41,6 +41,7 @@ TRACKED_SETTINGS = {
 
 class PostingException(Exception):
     """Custom exception type for errors posting help to the chosen pastebin."""
+
     pass
 
 
@@ -174,6 +175,7 @@ REPLY_METHODS = [
 
 class HelpSection(types.StaticSection):
     """Configuration section for this plugin."""
+
     output = types.ChoiceAttribute('output',
                                    list(PASTEBIN_PROVIDERS),
                                    default='clbin')
@@ -189,12 +191,13 @@ class HelpSection(types.StaticSection):
 
 
 def configure(config):
-    """
+    r"""Interactively configure plugin.
+
     | name | example | purpose |
     | ---- | ------- | ------- |
     | output | clbin | The pastebin provider to use for help output |
-    | reply\\_method | channel | How/where help output should be sent |
-    | show\\_server\\_host | True | Whether to show the IRC server's hostname/IP at the top of command listings |
+    | reply\_method | channel | How/where help output should be sent |
+    | show\_server\_host | True | Whether to show the IRC server's hostname/IP at the top of command listings |
     """
     config.define_section('help', HelpSection)
     provider_list = ', '.join(PASTEBIN_PROVIDERS)
@@ -249,7 +252,7 @@ def is_cache_valid(bot):
 @plugin.command('help', 'commands')
 @plugin.priority('low')
 def help(bot, trigger):
-    """Shows a command's documentation, and an example if available. With no arguments, lists all commands."""
+    """Show a command's documentation, and an example if available. With no arguments, lists all commands."""
     if bot.config.help.reply_method == 'query':
         def respond(text):
             bot.say(text, trigger.nick)
@@ -323,7 +326,7 @@ def help(bot, trigger):
 
 
 def create_list(bot, msg):
-    """Creates & uploads the command list.
+    """Create and upload the command list.
 
     Returns the URL from the chosen pastebin provider.
     """

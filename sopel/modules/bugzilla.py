@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-bugzilla.py - Sopel Bugzilla Plugin
+"""bugzilla.py - Sopel Bugzilla Plugin.
+
 Copyright 2013-2015, Embolalia, embolalia.com
 Licensed under the Eiffel Forum License 2.
 
@@ -21,12 +21,15 @@ LOGGER = logging.getLogger(__name__)
 
 
 class BugzillaSection(types.StaticSection):
+    """Plugin configuration definition."""
+
     domains = types.ListAttribute('domains')
     """A list of Bugzilla issue tracker domains from which to get information."""
 
 
 def configure(config):
-    """
+    """Interactively configure the plugin.
+
     | name | example | purpose |
     | ---- | ------- | ------- |
     | domains | bugzilla.redhat.com,bugzilla.mozilla.org | A list of Bugzilla issue tracker domains |

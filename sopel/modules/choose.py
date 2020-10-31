@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-choose.py - Sopel Choice Plugin
+"""choose.py - Sopel Choice Plugin.
+
 Copyright 2010-2013, Dimitri "Tyrope" Molenaars, TyRope.nl
 Copyright 2013, Ari Koivula, <ari@koivu.la>
 Copyright 2018, Florian Strzelecki, <florian.strzelecki@gmail.com>
@@ -30,7 +30,7 @@ from sopel import plugin
 @plugin.example(".choose a | b | c", user_help=True)
 @plugin.example(".choose a, b, c", user_help=True)
 def choose(bot, trigger):
-    """Makes a difficult choice easy."""
+    """Make a difficult choice easy."""
     if not trigger.group(2):
         bot.reply("I'd choose an option, but you didn't give me any.")
         return

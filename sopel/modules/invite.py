@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-invite.py - Sopel Invite Plugin
+"""invite.py - Sopel Invite Plugin.
+
 Copyright © 2016, João Vanzuita, https://github.com/converge
 Copyright © 2019, dgw, https://github.com/dgw
 Licensed under the Eiffel Forum License 2.
@@ -16,7 +16,7 @@ MIN_PRIV = plugin.HALFOP
 
 
 def invite_handler(bot, sender, user, channel):
-    """Common control logic for invite commands received from anywhere."""
+    """Check common requirements for invite commands."""
     sender = tools.Identifier(sender)
     user = tools.Identifier(user)
     channel = tools.Identifier(channel)
@@ -60,10 +60,7 @@ def invite_handler(bot, sender, user, channel):
 @plugin.example('.invite jenny', user_help=True)
 @plugin.example('.invite converge #sopel', user_help=True)
 def invite(bot, trigger):
-    """
-    Invite the given user to the current channel, or (with optional
-    second argument) another channel that Sopel is in.
-    """
+    """Invite the given user to the current or given channel."""
     if not trigger.group(3):
         return bot.reply("Whom should I invite?")
     user = trigger.group(3)

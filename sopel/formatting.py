@@ -117,6 +117,11 @@ PLAIN_REGEX = re.compile(PLAIN_PATTERN)
 
 # TODO when we can move to 3.3+ completely, make this an Enum.
 class colors:
+    """IRC/mIRC color codes.
+
+    https://modern.ircdocs.horse/formatting.html#colors plus aliases.
+    """
+
     WHITE = '00'
     BLACK = '01'
     BLUE = '02'
