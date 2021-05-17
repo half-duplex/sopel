@@ -59,13 +59,20 @@ from . import core_section, types
 __all__ = [
     'core_section',
     'types',
-    'DEFAULT_HOMEDIR',
+    'DEFAULT_CONFIG_DIR',
+    'DEFAULT_DATA_DIR',
     'ConfigurationError',
     'ConfigurationNotFound',
     'Config',
 ]
 
-DEFAULT_HOMEDIR = os.path.join(os.path.expanduser('~'), '.sopel')
+HOME = os.path.expanduser("~")
+DEFAULT_CONFIG_DIR = DEFAULT_DATA_DIR = os.path.join(HOME, ".sopel")
+if not os.path.exists(DEFAULT_CONFIG_DIR):
+    XDG_CONFIG_HOME = os.environ.get("XDG_DATA_HOME", os.path.join(HOME, ".config"))
+    XDG_DATA_HOME = os.environ.get("XDG_DATA_HOME", os.path.join(HOME, ".local", "share"))
+    DEFAULT_CONFIG_DIR = os.path.join(XDG_CONFIG_DIR, "sopel")
+    DEFAULT_DATA_DIR = os.path.join(XDG_DATA_DIR, "sopel")
 
 
 class ConfigurationError(Exception):

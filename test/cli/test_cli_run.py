@@ -65,7 +65,7 @@ def test_build_parser_start():
     assert hasattr(options, 'quiet')
 
     assert options.config == 'default'
-    assert options.configdir == config.DEFAULT_HOMEDIR
+    assert options.configdir == config.DEFAULT_CONFIG_DIR
     assert options.daemonize is False
     assert options.quiet is False
 
@@ -116,7 +116,7 @@ def test_build_parser_stop():
     assert hasattr(options, 'quiet')
 
     assert options.config == 'default'
-    assert options.configdir == config.DEFAULT_HOMEDIR
+    assert options.configdir == config.DEFAULT_CONFIG_DIR
     assert options.kill is False
     assert options.quiet is False
 
@@ -166,7 +166,7 @@ def test_build_parser_restart():
     assert hasattr(options, 'quiet')
 
     assert options.config == 'default'
-    assert options.configdir == config.DEFAULT_HOMEDIR
+    assert options.configdir == config.DEFAULT_CONFIG_DIR
     assert options.quiet is False
 
 
@@ -205,7 +205,7 @@ def test_build_parser_configure():
     assert hasattr(options, 'plugins')
 
     assert options.config == 'default'
-    assert options.configdir == config.DEFAULT_HOMEDIR
+    assert options.configdir == config.DEFAULT_CONFIG_DIR
     assert options.plugins is False
 
 

@@ -181,11 +181,11 @@ def enumerate_configs(config_dir, extension='.cfg'):
     Example::
 
         >>> from sopel import cli, config
-        >>> os.listdir(config.DEFAULT_HOMEDIR)
+        >>> os.listdir(config.DEFAULT_CONFIG_DIR)
         ['config.cfg', 'extra.ini', 'plugin.cfg', 'README']
-        >>> cli.enumerate_configs(config.DEFAULT_HOMEDIR)
+        >>> cli.enumerate_configs(config.DEFAULT_CONFIG_DIR)
         ['config.cfg', 'plugin.cfg']
-        >>> cli.enumerate_configs(config.DEFAULT_HOMEDIR, '.ini')
+        >>> cli.enumerate_configs(config.DEFAULT_CONFIG_DIR, '.ini')
         ['extra.ini']
 
     """
@@ -218,15 +218,15 @@ def find_config(config_dir, name, extension='.cfg'):
         >>> from sopel import config
         >>> os.listdir()
         ['local.cfg', 'extra.ini']
-        >>> os.listdir(config.DEFAULT_HOMEDIR)
+        >>> os.listdir(config.DEFAULT_CONFIG_DIR)
         ['config.cfg', 'extra.ini', 'plugin.cfg', 'README']
-        >>> utils.find_config(config.DEFAULT_HOMEDIR, 'local.cfg')
+        >>> utils.find_config(config.DEFAULT_CONFIG_DIR, 'local.cfg')
         'local.cfg'
-        >>> utils.find_config(config.DEFAULT_HOMEDIR, 'local')
+        >>> utils.find_config(config.DEFAULT_CONFIG_DIR, 'local')
         '/home/username/.sopel/local'
-        >>> utils.find_config(config.DEFAULT_HOMEDIR, 'config')
+        >>> utils.find_config(config.DEFAULT_CONFIG_DIR, 'config')
         '/home/username/.sopel/config.cfg'
-        >>> utils.find_config(config.DEFAULT_HOMEDIR, 'extra', '.ini')
+        >>> utils.find_config(config.DEFAULT_CONFIG_DIR, 'extra', '.ini')
         '/home/username/.sopel/extra.ini'
 
     """
@@ -288,7 +288,7 @@ def add_common_arguments(parser):
         """))
     parser.add_argument(
         '--config-dir',
-        default=os.environ.get('SOPEL_CONFIG_DIR') or config.DEFAULT_HOMEDIR,
+        default=os.environ.get('SOPEL_CONFIG_DIR') or config.DEFAULT_CONFIG_DIR,
         dest='configdir',
         help=inspect.cleandoc("""
             Look for configuration files in this directory.

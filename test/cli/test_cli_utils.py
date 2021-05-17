@@ -155,7 +155,7 @@ def test_add_common_arguments():
     assert hasattr(options, 'config')
     assert hasattr(options, 'configdir')
     assert options.config == 'default'
-    assert options.configdir == config.DEFAULT_HOMEDIR
+    assert options.configdir == config.DEFAULT_CONFIG_DIR
 
     options = parser.parse_args(['-c', 'test-short'])
     assert options.config == 'test-short'
@@ -191,7 +191,7 @@ def test_add_common_arguments_subparser():
     assert hasattr(options, 'config')
     assert hasattr(options, 'configdir')
     assert options.config == 'default'
-    assert options.configdir == config.DEFAULT_HOMEDIR
+    assert options.configdir == config.DEFAULT_CONFIG_DIR
 
     options = parser.parse_args(['sub', '-c', 'test-short'])
     assert options.config == 'test-short'
