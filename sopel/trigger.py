@@ -7,7 +7,7 @@ import re
 import sys
 
 from sopel import formatting, tools
-from sopel.tools import web
+from sopel.tools import deprecated, web
 
 
 __all__ = [
@@ -95,11 +95,14 @@ class PreTrigger(object):
         The last argument of the IRC command with control codes stripped.
 
     .. py:attribute:: time
+        :type: datetime.datetime
 
-        The time when the message was received.
+        A timezone-naïve :class:`~datetime.datetime` object. If the IRC server
+        supports ``server-time``, :attr:`time` will give that value.
+        Otherwise, :attr:`time` will use the time when the message was received
+        by Sopel. In both cases, this time is in UTC.
 
-        If the IRC server sent a message tag indicating when *it* received the
-        message, that is used instead of the time when Sopel received it.
+        .. note:: In Sopel 8.0 this attribute will become timezone-aware.
 
     .. py:attribute:: user
 
@@ -199,6 +202,23 @@ class PreTrigger(object):
         if self.args:
             self.plain = formatting.plain(self.args[-1])
 
+    @property
+    @deprecated(
+        reason=(
+            "The `pretrigger.time` and `trigger.time` attributes will become "
+            "timezone-aware in Sopel 8.0. You will need to update your code "
+            "at that time, or handle both timezone-naïve and timezone-aware "
+            "objects in advance."
+        ),
+        version="7.1",
+    )
+    def time(self):
+        return self._time
+
+    @time.setter
+    def time(self, value):
+        self._time = value
+
 
 class Trigger(unicode):
     """A line from the server, which has matched a callable's rules.
@@ -241,6 +261,15 @@ class Trigger(unicode):
     If the IRC server supports ``server-time``, :attr:`time` will give that
     value. Otherwise, :attr:`time` will use the time when the message was
     received by Sopel. In both cases, this time is in UTC.
+
+    .. note:: In Sopel 8.0 this attribute will become timezone-aware. You
+        should either handle both timezone-naïve and timezone-aware
+        :class:`~datetime.datetime` objects, or plan to update your plugins
+        when Sopel 8 is released. Example for supporting both::
+
+            time = trigger.time
+            # Make `time` timezone-aware in Sopel 7
+            time.replace(tzinfo=datetime.timezone.utc)
     """
     raw = property(lambda self: self._pretrigger.line)
     """The entire raw IRC message, as sent from the server.
