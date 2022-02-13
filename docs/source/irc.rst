@@ -28,12 +28,7 @@ Backend Interface
 Backends
 ========
 
-.. autoclass:: sopel.irc.backends.AsynchatBackend
-    :members:
-    :show-inheritance:
-
-
-.. autoclass:: sopel.irc.backends.SSLAsynchatBackend
+.. autoclass:: sopel.irc.backends.AsyncioBackend
     :members:
     :show-inheritance:
 
