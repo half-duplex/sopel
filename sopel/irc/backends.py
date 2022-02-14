@@ -37,7 +37,7 @@ class AsyncioBackend(AbstractIRCBackend):
     """IRC Backend implementation using :mod:`asyncio`.
 
     :param bot: an instance of a bot that uses the backend
-    :param host: hostname to connect to
+    :param host: hostname/IP to connect to
     :param port: port to connect to
     :param source_address: optional source address as a tuple of
                            ``(host, port)``
@@ -128,7 +128,7 @@ class AsyncioBackend(AbstractIRCBackend):
         self.send_ping(self._host)
 
     def _timeout_callback(self) -> None:
-        # cancel every other tasks
+        # cancel other tasks
         for task in [self._ping_task, self._read_task]:
             if task is not None:
                 task.cancel()
@@ -195,12 +195,12 @@ class AsyncioBackend(AbstractIRCBackend):
     async def read_forever(self) -> None:
         """Main reading loop of the backend.
 
-        This listens to the reader for IRC line, decodes the line, and pass
-        that to
+        This listens to the reader for an incoming IRC line, decodes the data,
+        and passes it to
         :meth:`bot.on_message(data) <sopel.irc.AbstractBot.on_message>`, until
         the reader reaches the EOF (i.e. connection closed).
 
-        It manages timeout by scheduling two tasks:
+        It manages connection timeouts by scheduling two tasks:
 
         * a PING task, that will send a PING to the server as defined by
           the ping interval (from the configuration)
@@ -239,18 +239,18 @@ class AsyncioBackend(AbstractIRCBackend):
 
             # connection is active: reset timeout tasks
             self._reset_timeout_tasks()
-            # check content
 
+            # check content
             if not line:
                 LOGGER.debug('No data received.')
                 continue
 
-            # use bot's callback
+            # use bot's callbacks
             data = self.decode_line(line)
             self.bot.log_raw(data, '<<')
             self.bot.on_message(data)
 
-        # cancel timeout tasks
+        # cancel timeout tasks when reading loop ends
         self._cancel_timeout_tasks()
 
     # run & connection
@@ -286,7 +286,7 @@ class AsyncioBackend(AbstractIRCBackend):
     async def _run_forever(self) -> None:
         self._loop = asyncio.get_running_loop()
 
-        # register signals handlers
+        # register signal handlers
         for quit_signal in QUIT_SIGNALS:
             self._loop.add_signal_handler(quit_signal, self._signal_quit)
         for restart_signal in RESTART_SIGNALS:

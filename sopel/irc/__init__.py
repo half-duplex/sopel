@@ -33,7 +33,7 @@ import time
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, TYPE_CHECKING
 
 from sopel import tools, trigger
-from sopel.tools import identifiers
+from sopel.tools.identifiers import Identifier
 from .abstract_backends import AbstractIRCBackend
 from .backends import AsyncioBackend
 from .isupport import ISupport
@@ -58,8 +58,7 @@ class AbstractBot(abc.ABC):
         self._name: str = settings.core.name
         self._isupport = ISupport()
         self._myinfo: Optional[MyInfo] = None
-        self._nick: identifiers.Identifier = self.make_identifier(
-            settings.core.nick)
+        self._nick: Identifier = self.make_identifier(settings.core.nick)
 
         self.backend: Optional[AbstractIRCBackend] = None
         """IRC Connection Backend."""
@@ -76,13 +75,13 @@ class AbstractBot(abc.ABC):
         self.sending = threading.RLock()
         self.last_error_timestamp: Optional[datetime] = None
         self.error_count = 0
-        self.stack: Dict[identifiers.Identifier, Dict[str, Any]] = {}
+        self.stack: Dict[Identifier, Dict[str, Any]] = {}
         self.hasquit = False
         self.wantsrestart = False
         self.last_raw_line = ''  # last raw line received
 
     @property
-    def nick(self) -> identifiers.Identifier:
+    def nick(self) -> Identifier:
         """Sopel's current nick.
 
         Changing this while Sopel is running is unsupported and can result in

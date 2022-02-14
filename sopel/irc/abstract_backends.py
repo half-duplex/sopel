@@ -57,8 +57,9 @@ class AbstractIRCBackend(abc.ABC):
         and it must call ``bot.on_connect`` once connected, or ``bot.on_close``
         if it fails to connect.
 
-        Then it must run forever, listening to the server, and allowing the
-        bot to use :meth:`~.send_command` in a thread-safe way.
+        Upon successful connection, it must run forever, listening to the
+        server and allowing the bot to use :meth:`~.send_command` in a
+        thread-safe way.
         """
 
     def decode_line(self, line: bytes) -> str:
