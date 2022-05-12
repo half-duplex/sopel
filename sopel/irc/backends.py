@@ -78,17 +78,10 @@ class AsyncioBackend(AbstractIRCBackend):
         self._port: int = port
         self._source_address: Optional[Tuple[str, int]] = source_address
         self._use_ssl: bool = use_ssl
-        self._certfile: Optional[str] = None
-        self._keyfile: Optional[str] = None
-        self._verify_ssl: bool = True
-        self._ca_certs: Optional[str] = None
-
-        # configure SSL if necessary
-        if self._use_ssl:
-            self._certfile = certfile
-            self._keyfile = keyfile
-            self._verify_ssl = verify_ssl
-            self._ca_certs = ca_certs
+        self._certfile: Optional[str] = certfile
+        self._keyfile: Optional[str] = keyfile
+        self._verify_ssl: bool = verify_ssl
+        self._ca_certs: Optional[str] = ca_certs
 
         # timeout configuration
         self._server_timeout: float = float(server_timeout or 120)
@@ -279,13 +272,12 @@ class AsyncioBackend(AbstractIRCBackend):
                     keyfile=self._keyfile,
                 )
 
-            if not self._verify_ssl:
+            if self._verify_ssl and self._ca_certs is not None:
+                ssl_context.load_verify_locations(self._ca_certs)
+            elif not self._verify_ssl:
                 # deactivate SSL verification for hostname & certificate
                 ssl_context.check_hostname = False
                 ssl_context.verify_mode = ssl.CERT_NONE
-            else:
-                # verify location if verify_mode is not CERT_NONE
-                ssl_context.load_verify_locations(self._ca_certs)
 
         return {
             'host': self._host,
