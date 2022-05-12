@@ -249,7 +249,7 @@ class AsyncioBackend(AbstractIRCBackend):
             try:
                 self.bot.log_raw(data, '<<')
                 self.bot.on_message(data)
-            except:
+            except Exception:
                 LOGGER.exception('Unexpected exception on message handling.')
                 LOGGER.warning('Stopping the backend after error.')
                 break
