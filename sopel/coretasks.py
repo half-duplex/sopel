@@ -988,6 +988,7 @@ def receive_cap_ls_reply(bot, trigger):
         'server-time',
         'userhost-in-names',
         'message-tags',
+        'batch',
     ]
     for cap in core_caps:
         if cap not in bot._cap_reqs:

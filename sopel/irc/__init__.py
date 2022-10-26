@@ -91,6 +91,7 @@ class AbstractBot(abc.ABC):
         self.hasquit = False
         self.wantsrestart = False
         self.last_raw_line = ''  # last raw line received
+        self.batches = {}
 
     @property
     def nick(self) -> identifiers.Identifier:
@@ -315,6 +316,25 @@ class AbstractBot(abc.ABC):
             for cap in ['account-tag', 'extended-join']
         ):
             pretrigger.tags.pop('account', None)
+
+        # Batch handling
+        if pretrigger.event == "BATCH":
+            action = pretrigger.args[1][0]
+            if action == "+":
+                newbatch = Batch(pretrigger, parent=self.batches.get(pretrigger.tags.get("batch")))
+                self.batches[newbatch.reference] = newbatch
+            elif action == "-":
+                if self.batches[pretrigger.args[1][0]]
+                pass  # todo: handle batch
+            else:
+                LOGGER.error("Received malformed BATCH message: %r", message)
+                return
+        if "batch" in pretrigger.tags:
+            if pretrigger.tags["batch"] not in self.batches:
+                LOGGER.error("Received message in unknown batch: %r", message)
+                return
+            pass  # todo: add message to batch
+
 
         if pretrigger.event == 'PING':
             self.backend.send_pong(pretrigger.args[-1])
