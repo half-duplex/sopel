@@ -165,6 +165,11 @@ check_untyped_defs = true
 disallow_incomplete_defs = true
 show_error_codes = true
 
+# Remove once scramp has type stubs or annotations
+[[tool.mypy.overrides]]
+module = 'scramp.*'
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 # NOTE: sopel/ is included here to include dynamically-generated tests
 testpaths = ["test", "sopel"]
