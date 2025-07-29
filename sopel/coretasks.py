@@ -145,11 +145,16 @@ def _handle_sasl_capability(
         # See https://github.com/sopel-irc/sopel/issues/1780 for background
 
         common_mechs = set(sopel_mechs) & set(server_mechs)
+        common_mech_str = ", ".join(common_mechs) if common_mechs else "None"
         raise config.ConfigurationError(
-            'SASL mechanism "{mech}" is not advertised by this server; '
-            'available mechanisms are: {available}.'.format(
+            "Server doesn't support configured SASL mechanism {mech}. "
+            "Mutually-supported: {common}; Sopel-supported: {sopel}; "
+            "Server-supported: {server}"
+            .format(
                 mech=mech,
-                available=', '.join(common_mechs),
+                common=common_mech_str,
+                sopel=", ".join(sopel_mechs),
+                server=", ".join(server_mechs),
             )
         )
 
