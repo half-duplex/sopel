@@ -1303,40 +1303,40 @@ def auth_proceed(bot, trigger):
 
     elif mech == "SCRAM-SHA-256":
         if trigger.args[0] == "+":
-            bot._scram_client = ScramClient([mech], sasl_username, sasl_password)
-            client_first = bot._scram_client.get_client_first()
+            bot.memory["scram_client"] = ScramClient([mech], sasl_username, sasl_password)
+            client_first = bot.memory["scram_client"].get_client_first()
             LOGGER.info("Sending SASL SCRAM client first")
             send_authenticate(bot, client_first)
-        elif bot._scram_client.stage == ScramClientStage.get_client_first:
+        elif bot.memory["scram_client"].stage == ScramClientStage.get_client_first:
             try:
                 server_first = base64.b64decode(trigger.args[0]).decode("utf-8")
-                bot._scram_client.set_server_first(server_first)
+                bot.memory["scram_client"].set_server_first(server_first)
             except (BinasciiError, KeyError, ScramException) as e:
                 LOGGER.error("SASL SCRAM server_first failed: %r", e)
                 bot.write(("AUTHENTICATE", "*"))
                 return
-            if bot._scram_client.iterations < 4096:
+            if bot.memory["scram_client"].iterations < 4096:
                 LOGGER.warning(
                     "SASL SCRAM iteration count is insecure, continuing anyway"
                 )
-            elif bot._scram_client.iterations >= 4_000_000:
+            elif bot.memory["scram_client"].iterations >= 4_000_000:
                 LOGGER.warning(
                     "SASL SCRAM iteration count is very high, this will be slow..."
                 )
-            client_final = bot._scram_client.get_client_final()
+            client_final = bot.memory["scram_client"].get_client_final()
             LOGGER.info("Sending SASL SCRAM client final")
             send_authenticate(bot, client_final)
-        elif bot._scram_client.stage == ScramClientStage.get_client_final:
+        elif bot.memory["scram_client"].stage == ScramClientStage.get_client_final:
             try:
                 server_final = base64.b64decode(trigger.args[0]).decode("utf-8")
-                bot._scram_client.set_server_final(server_final)
+                bot.memory["scram_client"].set_server_final(server_final)
             except (BinasciiError, KeyError, ScramException) as e:
                 LOGGER.error("SASL SCRAM server_final failed: %r", e)
                 bot.write(("AUTHENTICATE", "*"))
                 return
             LOGGER.info("SASL SCRAM succeeded")
             bot.write(("AUTHENTICATE", "+"))
-            bot._scram_client = None
+            bot.memory["scram_client"] = None
         return
 
 
