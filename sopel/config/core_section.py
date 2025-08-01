@@ -243,21 +243,44 @@ class CoreSection(StaticSection):
     See :ref:`Authentication`.
     """
 
+    auth_sasl_mech = ValidatedAttribute('auth_sasl_mech')
+    """The SASL mechanism to use.
+
+    :default: ``PLAIN``
+
+    This is only used with the ``sasl`` :attr:`auth_method`.
+
+    Supported mechanisms, from most to least secure, are:
+
+    * ``EXTERNAL``, to authenticate using a TLS client certificate
+      (see :attr:`client_cert_file`)
+    * ``SCRAM-SHA3-512``(``-PLUS``)
+    * ``SCRAM-SHA-512``(``-PLUS``)
+    * ``SCRAM-SHA-256``(``-PLUS``)
+    * ``PLAIN``, to authenticate by sending a plaintext password
+
+    `SCRAM`__ allows Sopel to authenticate to the server without transmitting
+    the password itself. If a non-PLUS variant is specified, it will be
+    upgraded to the channel-binding -PLUS variant if advertised by the server.
+
+    .. __: https://en.wikipedia.org/wiki/Salted_Challenge_Response_Authentication_Mechanism
+
+    .. versionadded:: 8.1
+    """
+
     auth_target = ValidatedAttribute('auth_target')
     """Target for authentication.
 
     :default:
         * ``NickServ`` if using the ``nickserv`` :attr:`auth_method`
         * ``UserServ`` if using the ``userserv`` :attr:`auth_method`
-        * ``PLAIN`` if using the ``sasl`` :attr:`auth_method`
 
-    The nickname of the NickServ or UserServ service, or the name of the
-    desired SASL mechanism, if :attr:`auth_method` is set to one of these
-    methods. For SASL, the ``EXTERNAL`` option is available in case the IRC
-    network requires it (e.g. for CertFP using :attr:`client_cert_file`). This
-    value is otherwise ignored.
+    The nickname of the NickServ or UserServ service to authenticate to.
 
     See :ref:`Authentication`.
+
+    .. versionchanged:: 8.1
+        SASL mechanisms are now set using :attr:`auth_sasl_mech`
     """
 
     auth_username = ValidatedAttribute('auth_username')
@@ -1233,16 +1256,16 @@ class CoreSection(StaticSection):
 
     :default: ``PLAIN``
 
-    Supported mechanisms are:
+    This is only used with the ``sasl`` :attr:`server_auth_method`.
 
-    * ``PLAIN``, to authenticate by sending a plaintext password
-    * ``EXTERNAL``, to authenticate using a TLS client certificate
-      (see :attr:`client_cert_file`)
-    * ``SCRAM-SHA-256``, for password-based challenge-response authentication
+    See :attr:`auth_sasl_mech` and :ref:`Authentication` for more information
+    and more secure options than ``PLAIN``.
 
     .. versionadded:: 7.0
     .. versionchanged:: 8.0
-        Added support for SASL EXTERNAL and SCRAM-SHA-256 mechanisms.
+        Added support for the SASL EXTERNAL mechanism.
+    .. versionchanged:: 8.1
+        Added support for SCRAM mechanisms.
     """
 
     server_auth_username = ValidatedAttribute('server_auth_username')

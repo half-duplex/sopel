@@ -34,7 +34,7 @@ import time
 from typing import Callable, Optional, TYPE_CHECKING
 
 from scramp import ScramClient, ScramException
-from scramp.core import ClientStage as ScramClientStage
+from scramp.core import ClientStage as ScramClientStage, MECHANISMS as SCRAMP_MECHANISMS
 
 from sopel import config, plugin
 from sopel.irc import isupport, utils
@@ -99,9 +99,9 @@ def _handle_sasl_capability(
     # Manage CAP REQ :sasl
     auth_method = bot.settings.core.auth_method
     server_auth_method = bot.settings.core.server_auth_method
-    is_required = 'sasl' in (auth_method, server_auth_method)
+    sasl_enabled = 'sasl' in (auth_method, server_auth_method)
 
-    if not is_required:
+    if not sasl_enabled:
         # not required: we are fine, available or not
         return plugin.CapabilityNegotiation.DONE
     elif not acknowledged:
@@ -123,16 +123,16 @@ def _handle_sasl_capability(
     cap_info = bot.capabilities.get_capability_info('sasl')
     cap_params = cap_info.params
 
-    server_mechs = cap_params.split(',') if cap_params else []
+    server_mechs = cap_params.split(",") if cap_params else []
 
-    sopel_mechs = ["PLAIN", "EXTERNAL", "SCRAM-SHA-256"]
+    sopel_mechs = ("PLAIN", "EXTERNAL") + SCRAMP_MECHANISMS
     if mech not in sopel_mechs:
-        raise config.ConfigurationError(
-            'SASL mechanism "{mech}" is not supported by Sopel; '
-            'available mechanisms are: {available}.'.format(
-                mech=mech,
-                available=', '.join(sopel_mechs),
-            )
+        # TODO FIXME neeeded?
+        LOGGER.warning(
+            "SASL mechanism %s is not handled by Sopel, it will fail unless "
+            "you have installed a plugin to manage it. Sopel supports: %s",
+            mech,
+            ", ".join(sopel_mechs),
         )
     if server_mechs and mech not in server_mechs:
         # Raise an error if configured to use an unsupported SASL mechanism,
@@ -148,9 +148,7 @@ def _handle_sasl_capability(
         common_mech_str = ", ".join(common_mechs) if common_mechs else "None"
         raise config.ConfigurationError(
             "Server doesn't support configured SASL mechanism {mech}. "
-            "Mutually-supported: {common}; Sopel-supported: {sopel}; "
-            "Server-supported: {server}"
-            .format(
+            "Mutually-supported: {common}; Server: {server}; Sopel: {sopel}".format(
                 mech=mech,
                 common=common_mech_str,
                 sopel=", ".join(sopel_mechs),
@@ -1431,6 +1429,7 @@ def _get_sasl_pass_and_mech(bot):
 
     if bot.config.core.auth_method == 'sasl':
         password = bot.config.core.auth_password
+        mech = bot.config.core.auth_sasl_mech
         mech = bot.config.core.auth_target
     elif bot.config.core.server_auth_method == 'sasl':
         password = bot.config.core.server_auth_password
