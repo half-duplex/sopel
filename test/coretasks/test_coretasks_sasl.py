@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from base64 import b64decode, b64encode
-from logging import ERROR
 from typing import TYPE_CHECKING
 
 import pytest
@@ -369,7 +368,7 @@ def test_sasl_plain_not_supported(botfactory: BotFactory, tmpconfig) -> None:
 
     assert mockbot.backend.message_sent[n:] == rawlist(
         'CAP END',
-        'QUIT :Configuration error.',
+        'QUIT :Error negotiating capabilities.',
     ), 'SASL mech is not available so we must stop here.'
 
 
@@ -430,15 +429,17 @@ def test_sasl_bad_method(mockbot: Sopel, caplog: pytest.LogCaptureFixture):
     """Verify the bot behaves when configured with an unsupported SASL method."""
     mockbot.settings.core.auth_method = "sasl"
     mockbot.settings.core.auth_target = "SCRAM-MD4"
-    mockbot.on_message("CAP * LS :sasl")
+    mockbot.on_message("CAP * LS :sasl=SCRAM-SHA-256,SCRAM-SHA-512")
     mockbot.on_message("CAP TestBot ACK :sasl")
     assert mockbot.backend.message_sent == rawlist(
         "CAP REQ :sasl",
         "CAP END",
     )
-    with caplog.at_level(ERROR):
-        mockbot.on_message("AUTHENTICATE +")
-    assert '"SCRAM-MD4" is not supported' in caplog.text
+    n = len(mockbot.backend.message_sent)
+    mockbot.on_message("AUTHENTICATE +")
+    assert mockbot.backend.message_sent[n:] == rawlist(
+        'QUIT :Error negotiating capabilities.',
+    )
 
 
 def test_sasl_plain_auth(mockbot: Sopel):
@@ -451,20 +452,19 @@ def test_sasl_plain_auth(mockbot: Sopel):
         "CAP REQ :sasl",
         "AUTHENTICATE PLAIN",
     )
+    n = len(mockbot.backend.message_sent)
     mockbot.on_message("AUTHENTICATE +")
     assert (
-        len(mockbot.backend.message_sent) == 3
-        and mockbot.backend.message_sent[-1]
-        == rawlist("AUTHENTICATE VGVzdEJvdABUZXN0Qm90AHNlY3JldA==")[0]
+        mockbot.backend.message_sent[n:]
+        == rawlist("AUTHENTICATE VGVzdEJvdABUZXN0Qm90AHNlY3JldA==")
     )
+    n = len(mockbot.backend.message_sent)
     mockbot.on_message(
         "900 TestBot test!test@test TestBot :You are now logged in as TestBot"
     )
+    assert len(mockbot.backend.message_sent) == n
     mockbot.on_message("903 TestBot :SASL authentication succeeded")
-    assert (
-        len(mockbot.backend.message_sent) == 4
-        and mockbot.backend.message_sent[-1] == rawlist("CAP END")[0]
-    )
+    assert mockbot.backend.message_sent[n:] == rawlist("CAP END")
 
 
 def test_sasl_scram_sha_256_auth(mockbot: Sopel):
@@ -485,35 +485,38 @@ def test_sasl_scram_sha_256_auth(mockbot: Sopel):
         "CAP REQ :sasl",
         "AUTHENTICATE SCRAM-SHA-256",
     )
-    mockbot.on_message("AUTHENTICATE +")
+    n = len(mockbot.backend.message_sent)
 
+    mockbot.on_message("AUTHENTICATE +")
     scram_server.set_client_first(
-        b64decode(mockbot.backend.message_sent[-1].split(b" ")[-1]).decode("utf-8")
+        b64decode(mockbot.backend.message_sent[n:][0].split(b" ")[-1]).decode("utf-8")
     )
+    assert len(mockbot.backend.message_sent) == (n := n + 1)
+
     mockbot.on_message(
         "AUTHENTICATE "
         + b64encode(scram_server.get_server_first().encode("utf-8")).decode("utf-8")
     )
     scram_server.set_client_final(
-        b64decode(mockbot.backend.message_sent[-1].split(b" ")[-1]).decode("utf-8")
+        b64decode(mockbot.backend.message_sent[n:][0].split(b" ")[-1]).decode("utf-8")
     )
+    assert len(mockbot.backend.message_sent) == (n := n + 1)
+
     mockbot.on_message(
         "AUTHENTICATE "
         + b64encode(scram_server.get_server_final().encode("utf-8")).decode("utf-8")
     )
     assert (
-        len(mockbot.backend.message_sent) == 5
-        and mockbot.backend.message_sent[-1] == rawlist("AUTHENTICATE +")[0]
+        mockbot.backend.message_sent[n:] == rawlist("AUTHENTICATE +")
     )
+    n = len(mockbot.backend.message_sent)
 
     mockbot.on_message(
         "900 TestBot test!test@test TestBot :You are now logged in as TestBot"
     )
+    assert len(mockbot.backend.message_sent) == n
     mockbot.on_message("903 TestBot :SASL authentication succeeded")
-    assert (
-        len(mockbot.backend.message_sent) == 6
-        and mockbot.backend.message_sent[-1] == rawlist("CAP END")[0]
-    )
+    assert mockbot.backend.message_sent[n:] == rawlist("CAP END")
 
 
 def test_sasl_scram_sha_256_invalid_server_first(mockbot: Sopel):

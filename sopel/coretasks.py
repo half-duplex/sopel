@@ -33,8 +33,11 @@ import re
 import time
 from typing import Callable, Optional, TYPE_CHECKING
 
-from scramp import ScramClient, ScramException
-from scramp.core import ClientStage as ScramClientStage, MECHANISMS as SCRAMP_MECHANISMS
+from scramp import make_channel_binding, ScramClient, ScramException
+from scramp.core import (
+    ClientStage as ScramClientStage,
+    MECHANISMS as SCRAMP_MECHANISMS,
+)
 
 from sopel import config, plugin
 from sopel.irc import isupport, utils
@@ -68,6 +71,9 @@ MODE_PREFIX_PRIVILEGES = {
 }
 
 
+SUPPORTED_SASL_MECHANISMS = ("PLAIN", "EXTERNAL") + SCRAMP_MECHANISMS
+
+
 def _handle_account_and_extjoin_capabilities(
     cap_req: tuple[str, ...], bot: SopelWrapper, acknowledged: bool,
 ) -> plugin.CapabilityNegotiation:
@@ -97,66 +103,73 @@ def _handle_sasl_capability(
     cap_req: tuple[str, ...], bot: SopelWrapper, acknowledged: bool,
 ) -> plugin.CapabilityNegotiation:
     # Manage CAP REQ :sasl
-    auth_method = bot.settings.core.auth_method
-    server_auth_method = bot.settings.core.server_auth_method
-    sasl_enabled = 'sasl' in (auth_method, server_auth_method)
 
-    if not sasl_enabled:
+    if not _sasl_enabled(bot):
         # not required: we are fine, available or not
         return plugin.CapabilityNegotiation.DONE
     elif not acknowledged:
         # required but not available: error, we must stop here
         LOGGER.error(
-            'SASL capability is not enabled; '
-            'cannot authenticate with SASL.',
+            "SASL is configured, but isn't offered by the server"
         )
         return plugin.CapabilityNegotiation.ERROR
 
-    # Check SASL configuration (password is required for PLAIN/SCRAM)
-    password, mech = _get_sasl_pass_and_mech(bot)
-    if mech != "EXTERNAL" and not password:
-        raise config.ConfigurationError(
-            'SASL authentication required but no password available; '
-            'please check your configuration file.',
-        )
-
+    cfg_mechs = _sasl_configured_mechs(bot)
+    mechs = _sasl_expand_mechs(cfg_mechs)
     cap_info = bot.capabilities.get_capability_info('sasl')
     cap_params = cap_info.params
 
-    server_mechs = cap_params.split(",") if cap_params else []
+    server_mechs = set(cap_params.split(",")) if cap_params else set()
+    common_supported_mechs = set(SUPPORTED_SASL_MECHANISMS) & server_mechs
+    common_enabled_mechs = set(mechs) & server_mechs
 
-    sopel_mechs = ("PLAIN", "EXTERNAL") + SCRAMP_MECHANISMS
-    if mech not in sopel_mechs:
-        # TODO FIXME neeeded?
-        LOGGER.warning(
-            "SASL mechanism %s is not handled by Sopel, it will fail unless "
-            "you have installed a plugin to manage it. Sopel supports: %s",
-            mech,
-            ", ".join(sopel_mechs),
+    # Raise an error if configured to use an unsupported SASL mechanism, but
+    # only if the server actually advertised supported mechanisms, with SASL
+    # 3.2. When possible, SASL 3.1 failure is handled by the sasl_mechs()
+    # function. See https://github.com/sopel-irc/sopel/issues/1780
+    no_matching_mechs = server_mechs and not common_enabled_mechs
+
+    if no_matching_mechs:
+        common_str = server_only_str = sopel_only_str = "None"
+        if common_supported_mechs:
+            common_str = ", ".join(sorted(common_supported_mechs))
+
+        server_only_mechs = set(SUPPORTED_SASL_MECHANISMS) - common_supported_mechs
+        if server_only_mechs:
+            server_only_str = ", ".join(sorted(server_only_mechs))
+
+        sopel_only_mechs = server_mechs - common_supported_mechs
+        if sopel_only_mechs:
+            sopel_only_str = ", ".join(sorted(sopel_only_mechs))
+
+        LOGGER.error(
+            "Configured auth_sasl_mechs %r (%r) are not supported by this server. "
+            "It looks like %r would be best. Mechanisms Sopel and server both "
+            "support: %s; Server-only: %s; Sopel-only: %s",
+            cfg_mechs,
+            ", ".join(sorted(mechs)),
+            _sasl_recommend_mechs(list(common_supported_mechs), bot.config.core.use_ssl),
+            common_str,
+            server_only_str,
+            sopel_only_str,
         )
-    if server_mechs and mech not in server_mechs:
-        # Raise an error if configured to use an unsupported SASL mechanism,
-        # but only if the server actually advertised supported mechanisms,
-        # i.e. this network supports SASL 3.2
 
-        # SASL 3.1 failure is handled (when possible)
-        # by the sasl_mechs() function
+        return plugin.CapabilityNegotiation.ERROR
 
-        # See https://github.com/sopel-irc/sopel/issues/1780 for background
-
-        common_mechs = set(sopel_mechs) & set(server_mechs)
-        common_mech_str = ", ".join(common_mechs) if common_mechs else "None"
-        raise config.ConfigurationError(
-            "Server doesn't support configured SASL mechanism {mech}. "
-            "Mutually-supported: {common}; Server: {server}; Sopel: {sopel}".format(
-                mech=mech,
-                common=common_mech_str,
-                sopel=", ".join(sopel_mechs),
-                server=", ".join(server_mechs),
-            )
-        )
-
-    bot.write(('AUTHENTICATE', mech))
+    if common_enabled_mechs:
+        scram_mechs = [m for m in common_enabled_mechs if m in SCRAMP_MECHANISMS]
+    else:
+        scram_mechs = [cfg_mechs] if cfg_mechs in SCRAMP_MECHANISMS else []
+    if scram_mechs:
+        channel_binding = None
+        if bot.config.core.use_ssl:
+            ssl_object = bot.backend._writer.get_extra_info("ssl_object")
+            channel_binding = make_channel_binding("tls-unique", ssl_object)
+        bot.memory["scram_client"] = ScramClient(list(common_enabled_mechs), "", "", channel_binding)
+        bot.write(('AUTHENTICATE', bot.memory["scram_client"].mechanism_name))
+    else:
+        mech = "PLAIN" if cfg_mechs == "ANY" else cfg_mechs
+        bot.write(('AUTHENTICATE', mech))
 
     # If we want to do SASL, we have to wait before we can send CAP END. So if
     # we are, wait on 903 (SASL successful) to send it.
@@ -1256,17 +1269,16 @@ def auth_proceed(bot, trigger):
     .. important::
 
         If ``core.auth_method`` is set, then ``core.server_auth_method`` will
-        be ignored. If none is set, then this function does nothing.
+        be ignored. If neither is set, then this function does nothing.
 
     """
-    if bot.config.core.auth_method == 'sasl':
-        mech = bot.config.core.auth_target or 'PLAIN'
-    elif bot.config.core.server_auth_method == 'sasl':
-        mech = bot.config.core.server_auth_sasl_mech or 'PLAIN'
-    else:
+    if not _sasl_enabled(bot):
         return
 
-    if mech == 'EXTERNAL':
+    cfg_mechs = _sasl_configured_mechs(bot)
+    mechs = _sasl_expand_mechs(cfg_mechs)
+
+    if cfg_mechs == 'EXTERNAL':
         if trigger.args[0] != '+':
             # not an expected response from the server; abort SASL
             token = '*'
@@ -1274,26 +1286,13 @@ def auth_proceed(bot, trigger):
             token = '+'
 
         bot.write(('AUTHENTICATE', token))
-        return
 
-    if bot.config.core.auth_method == 'sasl':
-        sasl_username = bot.config.core.auth_username
-        sasl_password = bot.config.core.auth_password
-    elif bot.config.core.server_auth_method == 'sasl':
-        sasl_username = bot.config.core.server_auth_username
-        sasl_password = bot.config.core.server_auth_password
-    else:
-        # How did we get here? I am not good with computer
-        return
-
-    sasl_username = sasl_username or bot.nick
-
-    if mech == 'PLAIN':
+    # FIXME: this needs to be "if cfg=plain or no sasl announced or no overlapping mechs"
+    elif cfg_mechs == 'PLAIN':
         if trigger.args[0] == '+':
-            sasl_token = _make_sasl_plain_token(sasl_username, sasl_password)
+            sasl_token = _make_sasl_plain_token(*_sasl_get_credentials(bot))
             LOGGER.info("Sending SASL Auth token.")
             send_authenticate(bot, sasl_token)
-            return
         else:
             # Not an expected response from the server
             LOGGER.warning(
@@ -1302,45 +1301,54 @@ def auth_proceed(bot, trigger):
             # Send `authenticate-abort` command
             # See https://ircv3.net/specs/extensions/sasl-3.1#the-authenticate-command
             bot.write(('AUTHENTICATE', '*'))
-            return
 
-    elif mech == "SCRAM-SHA-256":
-        if trigger.args[0] == "+":
-            bot.memory["scram_client"] = ScramClient([mech], sasl_username, sasl_password)
-            client_first = bot.memory["scram_client"].get_client_first()
-            LOGGER.info("Sending SASL SCRAM client first")
-            send_authenticate(bot, client_first)
-        elif bot.memory["scram_client"].stage == ScramClientStage.get_client_first:
-            try:
-                server_first = base64.b64decode(trigger.args[0]).decode("utf-8")
-                bot.memory["scram_client"].set_server_first(server_first)
-            except (BinasciiError, KeyError, ScramException) as e:
-                LOGGER.error("SASL SCRAM server_first failed: %r", e)
-                bot.write(("AUTHENTICATE", "*"))
-                return
-            if bot.memory["scram_client"].iterations < 4096:
-                LOGGER.warning(
-                    "SASL SCRAM iteration count is insecure, continuing anyway"
-                )
-            elif bot.memory["scram_client"].iterations >= 4_000_000:
-                LOGGER.warning(
-                    "SASL SCRAM iteration count is very high, this will be slow..."
-                )
-            client_final = bot.memory["scram_client"].get_client_final()
-            LOGGER.info("Sending SASL SCRAM client final")
-            send_authenticate(bot, client_final)
-        elif bot.memory["scram_client"].stage == ScramClientStage.get_client_final:
-            try:
-                server_final = base64.b64decode(trigger.args[0]).decode("utf-8")
-                bot.memory["scram_client"].set_server_final(server_final)
-            except (BinasciiError, KeyError, ScramException) as e:
-                LOGGER.error("SASL SCRAM server_final failed: %r", e)
-                bot.write(("AUTHENTICATE", "*"))
-                return
-            LOGGER.info("SASL SCRAM succeeded")
-            bot.write(("AUTHENTICATE", "+"))
-            bot.memory["scram_client"] = None
-        return
+    elif any(mech.startswith("SCRAM-") for mech in mechs):
+        _scram_proceed(bot, trigger, mechs)
+
+    else:
+        raise config.ConfigurationError(
+            "Unsupported auth_sasl_mechs {}".format(cfg_mechs)
+        )
+
+
+def _scram_proceed(bot: SopelWrapper, trigger: Trigger, mechs: list[str]) -> None:
+    sasl_username, sasl_password = _sasl_get_credentials(bot)
+    if trigger.args[0] == "+":
+        bot.memory["scram_client"] = ScramClient(mechs, sasl_username, sasl_password)
+        client_first = bot.memory["scram_client"].get_client_first()
+        LOGGER.info("Sending SASL SCRAM client first")
+        send_authenticate(bot, client_first)
+    elif bot.memory["scram_client"].stage == ScramClientStage.get_client_first:
+        try:
+            server_first = base64.b64decode(trigger.args[0]).decode("utf-8")
+            bot.memory["scram_client"].set_server_first(server_first)
+        except (BinasciiError, KeyError, ScramException) as e:
+            LOGGER.error("SASL SCRAM server_first failed: %r", e)
+            bot.write(("AUTHENTICATE", "*"))
+            return
+        if bot.memory["scram_client"].iterations < 4096:
+            LOGGER.warning(
+                "SASL SCRAM iteration count is insecure, continuing anyway"
+            )
+        elif bot.memory["scram_client"].iterations >= 4_000_000:
+            LOGGER.warning(
+                "SASL SCRAM iteration count is very high, this will be slow..."
+            )
+        client_final = bot.memory["scram_client"].get_client_final()
+        LOGGER.info("Sending SASL SCRAM client final")
+        send_authenticate(bot, client_final)
+    elif bot.memory["scram_client"].stage == ScramClientStage.get_client_final:
+        try:
+            server_final = base64.b64decode(trigger.args[0]).decode("utf-8")
+            bot.memory["scram_client"].set_server_final(server_final)
+        except (BinasciiError, KeyError, ScramException) as e:
+            LOGGER.error("SASL SCRAM server_final failed: %r", e)
+            bot.write(("AUTHENTICATE", "*"))
+            return
+        LOGGER.info("SASL SCRAM succeeded")
+        bot.write(("AUTHENTICATE", "+"))
+        bot.memory["scram_client"] = None
+    return
 
 
 def _make_sasl_plain_token(account, password):
@@ -1382,14 +1390,19 @@ def sasl_fail(bot, trigger):
 def sasl_mechs(bot, trigger):
     # Presumably we're only here if we said we actually *want* sasl, but still
     # check anyway in case the server glitched.
-    password, mech = _get_sasl_pass_and_mech(bot)
-    if not password:
+    if not _sasl_enabled(bot):
         # negotiation done
         bot.resume_capability_negotiation(CAP_SASL.cap_req, 'coretasks')
         return
 
-    supported_mechs = trigger.args[1].split(',')
-    if mech not in supported_mechs:
+    cfg_mechs = attempted_mech = _sasl_configured_mechs(bot)
+    # If we're on 3.1 or don't have advertised mechs, we defaulted to
+    # PLAIN instead of expanding groups
+    if attempted_mech == "ANY":
+        attempted_mech = "PLAIN"
+
+    server_mechs = set(trigger.args[1].split(','))
+    if attempted_mech not in server_mechs:
         """
         How we get here:
 
@@ -1407,37 +1420,129 @@ def sasl_mechs(bot, trigger):
 
         See https://github.com/sopel-irc/sopel/issues/1780 for background
         """
+        common_mechs = set(SUPPORTED_SASL_MECHANISMS) & server_mechs
         LOGGER.error(
-            "Configured SASL mechanism '%s' is not advertised by this server. "
-            "Advertised values: %s",
-            mech,
-            ', '.join(supported_mechs),
+            "Configured auth_sasl_mechs %r (%r) are not supported by this server. "
+            "It looks like %r would be best. Mechanisms Sopel and server both "
+            "support: %s; Server-only: %s; Sopel-only: %s",
+            cfg_mechs,
+            attempted_mech,
+            _sasl_recommend_mechs(list(common_mechs), bot.config.core.use_ssl),
+            ", ".join(sorted(common_mechs)) if common_mechs else "None",
+            ", ".join(sorted(set(SUPPORTED_SASL_MECHANISMS) - common_mechs)),
+            ", ".join(sorted(set(server_mechs) - common_mechs)),
         )
         bot.resume_capability_negotiation(CAP_SASL.cap_req, 'coretasks')
         bot.quit('Wrong SASL configuration.')
     else:
         LOGGER.info(
-            "Selected SASL mechanism is %s, advertised: %s",
-            mech,
-            ', '.join(supported_mechs),
+            "Selected SASL mechanism is %r (%r), advertised: %s",
+            cfg_mechs,
+            attempted_mech,
+            ', '.join(server_mechs),
         )
 
 
-def _get_sasl_pass_and_mech(bot):
-    password = None
-    mech = None
+def _sasl_enabled(bot: Sopel | SopelWrapper) -> bool:
+    auth_method = bot.config.core.auth_method
+    server_auth_method = bot.config.core.server_auth_method
 
-    if bot.config.core.auth_method == 'sasl':
-        password = bot.config.core.auth_password
-        mech = bot.config.core.auth_sasl_mech
-        mech = bot.config.core.auth_target
-    elif bot.config.core.server_auth_method == 'sasl':
+    if "sasl" in (auth_method, server_auth_method):
+        return True
+    return False
+
+
+def _sasl_configured_mechs(bot: Sopel | SopelWrapper) -> str:
+    """Find the configured SASL mechanism or group."""
+    cfg_mechs = bot.config.core.auth_sasl_mechs
+
+    # remove fallbacks in Sopel 10 or so
+    if not cfg_mechs:
+        if bot.config.core.auth_method == "sasl":
+            cfg_mechs = bot.config.core.auth_target
+        elif bot.config.core.server_auth_method == "sasl":
+            cfg_mechs = bot.config.core.server_auth_sasl_mech
+        if cfg_mechs:
+            LOGGER.warning(
+                "Setting the sasl mechanism with `auth_target` or "
+                "`server_auth_sasl_mech` is deprecated. Please use "
+                "`auth_sasl_mechs = %s` instead.",
+                cfg_mechs,
+            )
+
+    return cfg_mechs.upper() if cfg_mechs else "ANY"
+
+
+def _sasl_expand_mechs(cfg_mechs: str) -> list[str]:
+    """Find the SASL mechanisms enabled by a configured mech/group."""
+    if cfg_mechs in SUPPORTED_SASL_MECHANISMS:
+        return [cfg_mechs]
+
+    if not cfg_mechs or cfg_mechs == "ANY":
+        return list(filter(
+            lambda m: m.startswith("SCRAM-SHA") and "SHA-1" not in m and "SHA-224" not in m,
+            SUPPORTED_SASL_MECHANISMS,
+        )) + ["PLAIN"]
+
+    sha3 = ["SCRAM-SHA3-512"]
+    sha2 = [f"SCRAM-SHA-{bits}" for bits in (512, 384, 256)]
+    sha3plus = [m + "-PLUS" for m in sha3]
+    sha2plus = [m + "-PLUS" for m in sha2]
+    if cfg_mechs == "SCRAM-SHA3-PLUS":
+        return sha3plus
+    elif cfg_mechs == "SCRAM-SHA2-PLUS":
+        return sha3plus + sha2plus
+    elif cfg_mechs == "SCRAM-SHA3":
+        return sha3plus + sha3
+    elif cfg_mechs == "SCRAM-SHA2":
+        return sha3plus + sha2plus + sha3 + sha2
+    else:
+        raise config.ConfigurationError(
+            f"Unknown auth_sasl_mechs value {cfg_mechs}"
+        )
+
+
+def _sasl_recommend_mechs(available_mechs: list[str], tls: bool) -> str:
+    scram_mechs = list(set(available_mechs) & set(SCRAMP_MECHANISMS))
+    channel_binding = ("tls-unique", b"") if tls else None
+    scram = ScramClient(available_mechs, "", "", channel_binding)
+    best_mech = scram.mechanism_name
+    plus = scram.use_binding
+    mech_parts = best_mech.split("-")
+    if len(mech_parts) < 3:
+        return "None"
+    if mech_parts[1] == "SHA3":
+        return "SCRAM-SHA3-PLUS" if plus else "SCRAM-SHA3"
+    if mech_parts[1] == "SHA" and mech_parts[2] not in ("1", "224"):
+        return "SCRAM-SHA2-PLUS" if plus else "SCRAM-SHA2"
+    if best_mech in scram_mechs:
+        return best_mech
+    if "EXTERNAL" in available_mechs:
+        return "EXTERNAL"
+    if "PLAIN" in available_mechs:
+        return "PLAIN"
+    return "None"
+
+
+def _sasl_get_credentials(bot: Sopel | SopelWrapper) -> tuple[str, str]:
+    if not _sasl_enabled(bot):
+        raise Exception("SASL credentials requested, but SASL is not enabled")
+
+    server_auth_method = bot.config.core.server_auth_method
+
+    username = bot.config.core.auth_username
+    password = bot.config.core.auth_password
+    if server_auth_method == "sasl":
+        username = bot.config.core.server_auth_username
         password = bot.config.core.server_auth_password
-        mech = bot.config.core.server_auth_sasl_mech
+    username = username or bot.config.core.nick
 
-    mech = 'PLAIN' if mech is None else mech.upper()
+    if not username or not password:
+        raise config.ConfigurationError(
+            "SASL authentication is enabled but no password is configured"
+        )
 
-    return password, mech
+    return username, password
 
 
 # Live blocklist editing

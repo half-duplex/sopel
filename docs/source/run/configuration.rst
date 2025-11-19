@@ -497,8 +497,8 @@ details:
 * :attr:`~CoreSection.auth_username`: account's username, if used by
   the ``auth_method``
 * :attr:`~CoreSection.auth_password`: password for authentication
-* :attr:`~CoreSection.auth_sasl_mech`: the SASL mechanism to use with the
-  ``sasl`` ``auth_method``
+* :attr:`~CoreSection.auth_sasl_mechs`: the SASL mechanism or group to use
+  with the ``sasl`` ``auth_method``
 * :attr:`~CoreSection.auth_target`: authentication method's target, if required
   by the ``auth_method``:
 
@@ -527,7 +527,7 @@ And here is an example of server-based authentication using SASL::
     auth_username = BotAccount
     auth_password = SopelIsGreat!
     # default SASL mechanism
-    auth_sasl_mech = PLAIN
+    auth_sasl_mechs = ANY
 
 Example of authentication to a ZNC bouncer::
 
@@ -547,7 +547,7 @@ your IRC network's requirements::
     client_cert_file = /path/to/cert.pem  # your bot's client certificate
     # some networks require SASL EXTERNAL for CertFP to work
     auth_method = sasl                    # if required
-    auth_sasl_mech = EXTERNAL             # if required
+    auth_sasl_mechs = EXTERNAL            # if required
 
 
 Multi-stage
@@ -576,8 +576,8 @@ When :attr:`~CoreSection.server_auth_method` is defined the settings used are:
 
 * :attr:`~CoreSection.server_auth_username`: account's username
 * :attr:`~CoreSection.server_auth_password`: account's password
-* :attr:`~CoreSection.server_auth_sasl_mech`: the SASL mechanism to use
-  (default is ``PLAIN``; ``EXTERNAL`` and several ``SCRAM`` options are also available)
+* :attr:`~CoreSection.auth_sasl_mechs`: the SASL mechanisms to use, when
+  ``server_auth_method = sasl``.
 
 For example, this will use NickServ ``IDENTIFY`` command and SASL mechanism::
 
@@ -596,7 +596,7 @@ For example, this will use NickServ ``IDENTIFY`` command and SASL mechanism::
     server_auth_username = BotAccount
     server_auth_password = SopelIsGreat!
     # default SASL mechanism
-    server_auth_sasl_mech = PLAIN
+    auth_sasl_mechs = ANY
 
 .. important::
 
@@ -617,7 +617,7 @@ used are:
   credentials; may be optional for some authentication methods; defaults to
   ``NickServ`` for ``nickserv``, and to ``UserServ`` for ``userserv``.
 
-For example, this will use NickServ ``IDENTIFY`` command and SASL mechanism::
+For example, this will use both the NickServ ``IDENTIFY`` command and SASL::
 
     [core]
     # select nick-based authentication
@@ -634,7 +634,7 @@ For example, this will use NickServ ``IDENTIFY`` command and SASL mechanism::
     server_auth_username = BotAccount
     server_auth_password = SopelIsGreat!
     # default SASL mechanism
-    server_auth_sasl_mech = PLAIN
+    auth_sasl_mechs = ANY
 
 .. important::
 

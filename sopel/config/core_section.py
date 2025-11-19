@@ -243,27 +243,47 @@ class CoreSection(StaticSection):
     See :ref:`Authentication`.
     """
 
-    auth_sasl_mech = ValidatedAttribute('auth_sasl_mech')
-    """The SASL mechanism to use.
-
-    :default: ``PLAIN``
+    auth_sasl_mechs = ValidatedAttribute('auth_sasl_mechs', default="ANY")
+    """The SASL mechanisms or groups of mechanisms to use.
 
     This is only used with the ``sasl`` :attr:`auth_method`.
 
-    Supported mechanisms, from most to least secure, are:
+    :default: ``ANY``
+
+    `SCRAM`__ mechanisms allow Sopel to authenticate to the server without
+    transmitting the password itself.
+
+    .. note::
+        If your IRC network supports client certificate authentication, the
+        best option is to configure that (see :attr:`client_cert_file`) and
+        set ``auth_sasl_mechs=EXTERNAL``. If not, the next best option is to
+        set ``auth_sasl_mechs`` to the first supported entry from the list
+        below. Using ``ANY`` offers less protection from downgrade attacks.
+
+    .. important::
+        If your IRC network does not advertise SASL mechanisms, you must
+        specify a non-group mechanism here or ``PLAIN`` will be used.
+
+        .. code-block:: ini
+
+            auth_sasl_mechs = SCRAM-SHA-256
+
+    Available options, from most to least secure, are:
 
     * ``EXTERNAL``, to authenticate using a TLS client certificate
       (see :attr:`client_cert_file`)
-    * ``SCRAM-SHA3-512``(``-PLUS``)
-    * ``SCRAM-SHA-512``(``-PLUS``)
-    * ``SCRAM-SHA-256``(``-PLUS``)
-    * ``PLAIN``, to authenticate by sending a plaintext password
-
-    `SCRAM`__ allows Sopel to authenticate to the server without transmitting
-    the password itself. If a non-PLUS variant is specified, it will be
-    upgraded to the channel-binding -PLUS variant if advertised by the server.
+    * ``SCRAM-SHA3-PLUS`` group, for all channel-bound SHA-3 and better SCRAM mechanisms
+    * ``SCRAM-SHA2-PLUS`` group, for all channel-bound SHA-256 and better SCRAM mechanisms
+    * ``SCRAM-SHA3`` group, for all SHA-3 and better SCRAM mechanisms
+    * ``SCRAM-SHA2`` group, for all SHA-256 and better SCRAM mechanisms (most widely supported)
+    * Individual mechanisms supported by `scramp`__, like ``SCRAM-SHA-256-PLUS``
+      or ``SCRAM-SHA-256``.
+    * ``ANY`` group, to use SCRAM if advertised or a plaintext password
+    * ``PLAIN``, to always send a plaintext password
 
     .. __: https://en.wikipedia.org/wiki/Salted_Challenge_Response_Authentication_Mechanism
+    .. __: https://ircv3.net/specs/extensions/sasl-3.2
+    .. __: https://github.com/tlocke/scramp
 
     .. versionadded:: 8.1
     """
@@ -280,7 +300,7 @@ class CoreSection(StaticSection):
     See :ref:`Authentication`.
 
     .. versionchanged:: 8.1
-        SASL mechanisms are now set using :attr:`auth_sasl_mech`
+        SASL mechanisms are now set using :attr:`auth_sasl_mechs`
     """
 
     auth_username = ValidatedAttribute('auth_username')
@@ -1254,18 +1274,17 @@ class CoreSection(StaticSection):
     server_auth_sasl_mech = ValidatedAttribute('server_auth_sasl_mech')
     """The SASL mechanism.
 
-    :default: ``PLAIN``
+    :default: ``ANY``
 
     This is only used with the ``sasl`` :attr:`server_auth_method`.
 
-    See :attr:`auth_sasl_mech` and :ref:`Authentication` for more information
-    and more secure options than ``PLAIN``.
+    See :attr:`auth_sasl_mechs` and :ref:`Authentication` for more information.
 
     .. versionadded:: 7.0
     .. versionchanged:: 8.0
         Added support for the SASL EXTERNAL mechanism.
     .. versionchanged:: 8.1
-        Added support for SCRAM mechanisms.
+        Added support for SCRAM, changed default from ``PLAIN`` to ``ANY``
     """
 
     server_auth_username = ValidatedAttribute('server_auth_username')
